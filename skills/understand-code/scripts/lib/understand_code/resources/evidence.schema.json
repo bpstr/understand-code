@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bpstr/understand-code/schemas/evidence.schema.json",
+  "title": "evidence",
+  "type": "object",
+  "required": [
+    "id",
+    "path",
+    "start_line",
+    "end_line",
+    "sha256",
+    "excerpt_sha256",
+    "commit",
+    "kind"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12000
+    },
+    "start_line": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "end_line": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "excerpt_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "commit": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12000
+    },
+    "kind": {
+      "enum": [
+        "source",
+        "test",
+        "config",
+        "documentation",
+        "human"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

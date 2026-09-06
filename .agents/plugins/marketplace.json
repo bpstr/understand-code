@@ -1,0 +1,20 @@
+{
+  "name": "understand-code",
+  "interface": {
+    "displayName": "Understand Code"
+  },
+  "plugins": [
+    {
+      "name": "understand-code",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

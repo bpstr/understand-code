@@ -1,0 +1,33 @@
+{
+  "entity": {
+    "id": "feature.checkout",
+    "kind": "feature",
+    "title": "Checkout guest gate",
+    "summary": "checkout returns status 401 and requires_login=True when the user is absent and guest_checkout is false; otherwise it returns status 200.",
+    "confidence": "CORROBORATED"
+  },
+  "setting": {
+    "id": "setting.guest-checkout",
+    "kind": "setting",
+    "title": "Guest checkout setting",
+    "summary": "save_checkout_settings writes a boolean guest_checkout value and invalidates the checkout_settings cache entry.",
+    "confidence": "EXTRACTED"
+  },
+  "relation": {
+    "id": "relation.guest-checkout-gate",
+    "source": "setting.guest-checkout",
+    "target": "feature.checkout",
+    "kind": "affects",
+    "confidence": "CORROBORATED"
+  },
+  "gap": {
+    "id": "knowledge_gap.http-binding",
+    "question": "What binds ROUTES to an HTTP server? No binding exists in this fixture.",
+    "next_step": "Locate a server adapter before asserting the UI request reaches checkout."
+  },
+  "review": {
+    "status": "source-reviewed",
+    "reviewer": "prepared fixture author",
+    "method": "Manually authored fixture expectation; not provider quality or live execution evidence."
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Understand Code"
+  short_description: "Reconstruct features and behavior with source evidence"
+  default_prompt: "Use $understand-code to reconstruct this repository into an evidence-backed Codebase Spec."

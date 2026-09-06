@@ -1,0 +1,21 @@
+{
+  "name": "understand-code",
+  "version": "1.0.0",
+  "description": "Evidence-backed codebase reconstruction: architecture, features, flows, settings effects, and source-bound change maps.",
+  "author": {
+    "name": "bpstr",
+    "url": "https://github.com/bpstr"
+  },
+  "homepage": "https://github.com/bpstr/understand-code",
+  "repository": "https://github.com/bpstr/understand-code",
+  "license": "MIT",
+  "keywords": [
+    "architecture",
+    "codebase-understanding",
+    "codex",
+    "claude-code",
+    "graphify",
+    "agent-skills"
+  ],
+  "skills": "./skills/"
+}

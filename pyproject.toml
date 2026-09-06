@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "understand-code"
+version = "1.0.0"
+description = "Evidence-backed codebase reconstruction for Claude, Codex, and humans"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "bpstr"}]
+keywords = ["architecture", "codebase", "claude", "codex", "agent-skills", "graphify"]
+classifiers = ["Programming Language :: Python :: 3", "Topic :: Software Development :: Documentation"]
+dependencies = []
+
+[project.scripts]
+understand-code = "understand_code.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/bpstr/understand-code"
+Issues = "https://github.com/bpstr/understand-code/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+understand_code = ["resources/*.json", "resources/agents/*.md"]

@@ -1,0 +1,22 @@
+{
+  "name": "understand-code",
+  "owner": {
+    "name": "bpstr"
+  },
+  "metadata": {
+    "description": "Evidence-backed codebase reconstruction: architecture, features, flows, settings effects, and source-bound change maps."
+  },
+  "plugins": [
+    {
+      "name": "understand-code",
+      "source": "./",
+      "version": "1.0.0",
+      "description": "Evidence-backed codebase reconstruction: architecture, features, flows, settings effects, and source-bound change maps.",
+      "author": {
+        "name": "bpstr",
+        "url": "https://github.com/bpstr"
+      },
+      "license": "MIT"
+    }
+  ]
+}

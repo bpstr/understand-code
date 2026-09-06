@@ -1,0 +1,33 @@
+name: Offline validation
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.10', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Validate source contracts without inference or credentials
+        run: PYTHONPATH=src python -m unittest discover -s tests -v
+      - name: Validate distribution and self-contained skill
+        run: python scripts/check_distribution.py
+      - name: Build plugin archives
+        run: python scripts/release.py
+      - name: Build and install Python wheel
+        run: |
+          python -m pip wheel --no-deps . --wheel-dir dist
+          python -m pip install --no-deps dist/*.whl
+          understand-code --version
+          understand-code --help
+      - name: Exercise packaged entrypoints with prepared fixtures
+        run: python scripts/check_artifacts.py

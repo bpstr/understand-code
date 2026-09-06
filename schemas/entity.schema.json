@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bpstr/understand-code/schemas/entity.schema.json",
+  "title": "entity",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "title",
+    "summary",
+    "confidence",
+    "evidence"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+    },
+    "kind": {
+      "enum": [
+        "system",
+        "module",
+        "feature",
+        "flow",
+        "entrypoint",
+        "ui_surface",
+        "component",
+        "setting",
+        "feature_flag",
+        "data_entity",
+        "external_system",
+        "event",
+        "job",
+        "permission",
+        "test_behavior",
+        "decision",
+        "constraint",
+        "knowledge_gap"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12000
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12000
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "EXTRACTED",
+        "CORROBORATED",
+        "INFERRED",
+        "UNKNOWN"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+      },
+      "uniqueItems": true,
+      "maxItems": 500
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+      }
+    },
+    "supersedes": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+    },
+    "details": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 12000
+      }
+    }
+  },
+  "additionalProperties": false
+}
