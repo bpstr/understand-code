@@ -1,7 +1,5 @@
 # Understand Code
 
-Codex app: [View understand-code](codex://plugins/understand-code?marketplacePath=%2FUsers%2Fbpstr%2FGithub%2Funderstand-code%2F.agents%2Fplugins%2Fmarketplace.json) · [Share understand-code](codex://plugins/understand-code?marketplacePath=%2FUsers%2Fbpstr%2FGithub%2Funderstand-code%2F.agents%2Fplugins%2Fmarketplace.json&mode=share)
-
 **Reconstruct what a codebase does, where its features live, and how changes travel through it—with source evidence.**
 
 Understand Code is a Python CLI and self-contained Claude Code / Codex skill. It produces a repository-native **Codebase Spec** in `docs/codebase/`: Markdown concept pages, source citations, typed relationships, change maps and explicit knowledge gaps.
