@@ -2,7 +2,7 @@
 
 Read [architecture](docs/ARCHITECTURE.md) and [testing policy](docs/TESTING.md) before changing the engine.
 
-For code discovery, use any installed code-intelligence or code-graph tool that is explicitly described by applicable repository/ancestor agent instructions. Prefer its structural/symbol tools when useful; use scoped text/file searches when no such tool is configured, unavailable, or insufficient, and for config/literal searches. Understand Code must not hard-code or require a specific code-intelligence product.
+For code discovery, use any installed code-intelligence, symbol, semantic-search or code-graph tool explicitly described by applicable repository/ancestor agent instructions. Prefer the smallest useful structural query; use scoped text/file searches when no such tool is configured, unavailable, or insufficient, and for config/literal searches. Understand Code must not hard-code or require a specific code-intelligence product.
 
 Canonical code is in `src/`; input contracts are in `schemas/`. After editing either or the role registry, run `python3 scripts/build_bundle.py`. Do not independently edit generated skill engine copies or specialist cards.
 

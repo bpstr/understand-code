@@ -4,7 +4,7 @@ import json
 import os
 from pathlib import Path
 
-from . import __version__, graphify
+from . import __version__
 from .audit import audit
 from .discovery import inventory
 from .evidence import safe_path, verify as check_evidence
@@ -22,7 +22,6 @@ def load(root: Path, output: str) -> dict | None:
     marker = target / "_meta/manifest.json"
     if not marker.exists():
         return None
-    # Reject symlinked metadata before reading potentially unrelated files.
     for path in ("manifest.json", "inventory.json", "plan.json", "entities.jsonl", "relations.jsonl", "evidence.jsonl", "gaps.json", "audit.json"):
         safe_path(root, f"{output}/_meta/{path}")
     def read(name):
@@ -32,7 +31,6 @@ def load(root: Path, output: str) -> dict | None:
     manifest = read("manifest.json")
     if manifest.get("schema_version") != 1 or manifest.get("producer") != "understand-code":
         raise ValueError("Unsupported or unowned Codebase Spec manifest")
-    # Metadata paths from a manifest are untrusted.
     for path in manifest.get("managed", {}):
         safe_path(root, output + "/" + path)
     for path, expected in manifest.get("metadata_hashes", {}).items():
@@ -46,7 +44,6 @@ def load(root: Path, output: str) -> dict | None:
 
 @contextmanager
 def lock(root: Path, output: str):
-    # Keep the lock outside the scan and output tree; no application files are written.
     import tempfile
     lock_path = Path(tempfile.gettempdir()) / ("understand-code-" + digest(str(root / output)) + ".lock")
     try:
@@ -77,7 +74,7 @@ def baseline(inv: dict) -> list[dict]:
 
 def run(root: Path, output: str, command: str, mode: str = "standard", provider: str = "codex",
         focus: str | None = None, base: str | None = None, finding_paths: list[Path] | None = None,
-        graph_path: str = "graphify-out/graph.json", max_files: int = 2000, max_bytes: int = 5_000_000) -> dict:
+        max_files: int = 2000, max_bytes: int = 5_000_000) -> dict:
     root = root.resolve()
     target = safe_path(root, output)
     if target == root or not output.strip() or Path(output).parts[0] in ("src", "tests", "skills", ".git", ".github"):
@@ -87,13 +84,11 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
         if command in ("update", "focus", "apply") and old is None:
             raise ValueError("No Codebase Spec exists. Run bootstrap first.")
         inv = inventory(root, output, max_files, max_bytes)
-        graph = graphify.load(root, graph_path)
         entities = old["entities"] if old else baseline(inv)
         relations = old["relations"] if old else []
         previous_refs = old["evidence"] if old else []
         impact = analyze(old["inventory"], inv, entities, relations, previous_refs,
                          changes(root, base) if base else None) if old else None
-        # Reverify source-dependent concepts. Never rebind old claims to new source hashes.
         stale_refs = {r["id"] for r in previous_refs if check_evidence(root, r, output)}
         affected = set(impact["affected_entities"]) if impact else set()
         entities = [{**e, "confidence": "UNKNOWN", "stale": True} if e["id"] in affected or stale_refs.intersection(e["evidence"]) else e for e in entities]
@@ -104,25 +99,21 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
             if current_snapshot != task_plan["snapshot"]:
                 raise ValueError("Source changed during investigation. Run update and investigate the refreshed tasks.")
         elif command == "update" and old and not impact["changed_files"]:
-            # A no-op refresh must not erase incomplete discovery coverage.
             task_plan = old["plan"]
         else:
-            task_plan = plan(inv, graph, mode, focus, impact if command == "update" else None,
+            task_plan = plan(inv, mode, focus, impact if command == "update" else None,
                              entities, relations, previous_refs)
             if old:
                 accepted = {t["id"] for t in old["plan"]["tasks"] if t["status"] == "accepted"}
                 for task in task_plan["tasks"]:
                     if task["id"] in accepted:
                         task["status"] = "accepted"
-        # Preserve unfinished scopes across focused/incremental investigations. They remain
-        # explicit backlog rather than disappearing when the current plan becomes narrower.
         if old and command in ("focus", "update") and task_plan is not old["plan"]:
             active = {(t["role"], tuple(t["paths"])) for t in task_plan["tasks"]}
             for task in old["plan"]["tasks"]:
                 if task["status"] != "accepted" and (task["role"], tuple(task["paths"])) not in active:
                     task_plan["deferred"].append({"role": task["role"], "paths": task["paths"], "reason": "unfinished prior scope; rerun bootstrap or focus to schedule"})
             task_plan["deferred"].extend(old["plan"]["deferred"])
-        # Maintainer notes carry higher editorial authority, but never become source proof.
         if old:
             from .spec.writer import END
             notes = []
@@ -158,50 +149,39 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
             task["current_model"] = {"entities": concepts[:100],
                 "relations": [r for r in relations if r["source"] in ids or r["target"] in ids][:200],
                 "note": "Existing interpretations to reconcile and challenge, not authority over current source."}
-        # Retain exactly the evidence referenced by active claims and inventory, not abandoned stale citations.
         used_refs = {r for e in entities + relations for r in e["evidence"]} | {r["id"] for r in inv["evidence"]}
         refs = {key: value for key, value in refs.items() if key in used_refs}
-        gaps = {g["id"]: g for g in (old["gaps"] if old else []) + new_gaps}
+        gaps = {g["id"]: g for g in (old["gaps"] if old else []) + new_gaps if g.get("id") != "knowledge_gap.graphify"}
         for bundle in bundles:
             if bundle["review"]["status"] == "source-reviewed":
                 for claim in bundle["entities"] + bundle["relations"]:
                     if claim.get("supersedes") == claim["id"]:
                         gaps.pop(stable_id("knowledge_gap", claim["id"] + "conflict"), None)
-        if graph["status"] == "unavailable":
-            gaps["knowledge_gap.graphify"] = {"id": "knowledge_gap.graphify", "question": "Structural graph unavailable.",
-                                               "next_step": "Use existing MCP graph tools or provide a current Graphify node-link export; verify source before accepting graph hints."}
-        else:
-            gaps.pop("knowledge_gap.graphify", None)
         state = {"inventory": inv, "plan": task_plan, "entities": entities, "relations": relations,
-                 "evidence": list(refs.values()), "gaps": list(gaps.values()), "audit": audit(root, inv), "graph": graph}
+                 "evidence": list(refs.values()), "gaps": list(gaps.values()), "audit": audit(root, inv)}
         docs = render(state, output)
         manifest = {"producer": "understand-code", "schema_version": 1, "version": __version__,
                     "commit": inv["commit"], "snapshot": task_plan["snapshot"], "mode": mode, "provider": provider,
-                    "graph_status": graph["status"], "coverage": {"files": len(inv["files"]), "skipped": len(inv["skipped"]),
+                    "coverage": {"files": len(inv["files"]), "skipped": len(inv["skipped"]),
                     "entities": len(entities), "relations": len(relations), "gaps": len(gaps),
                     "pending_tasks": sum(t["status"] != "accepted" for t in task_plan["tasks"]),
                     "deferred_scopes": len(task_plan["deferred"])},
                     "validation": "mechanical source checks only; semantic review is recorded separately",
+                    "code_intelligence": "host-managed according to applicable agent instructions; external retrieval is never evidence",
                     "output": output}
         metadata = {"_meta/" + key + ".json": json_text(value) for key, value in
                     (("inventory", inv), ("plan", task_plan), ("gaps", state["gaps"]), ("audit", state["audit"]),
-                     ("impact", impact), ("graphify-semantic", graphify.export(entities, relations)))}
+                     ("impact", impact))}
         metadata.update({"_meta/" + key + ".jsonl": jsonl(state[key]) for key in ("entities", "relations", "evidence")})
-        metadata["_meta/graphify-handoff.json"] = json_text({"input_status": graph["status"], "input_path": graph_path,
-            "input_sha256": graph.get("sha256"), "markdown_root": output,
-            "semantic_export": output + "/_meta/graphify-semantic.json", "refresh": "pending-external",
-            "instructions": "Index current source and Codebase Spec Markdown with your installed Graphify/native graph tooling. No extraction command is launched by this CLI."})
-        # Archive each supplied response under its content hash. Failed evidence remains external and untouched.
         for bundle in bundles:
             text = json_text(bundle)
             metadata["_meta/findings/" + digest(text) + ".json"] = text
         for task in task_plan["tasks"]:
             metadata["_meta/tasks/" + task["id"] + ".md"] = prompt(provider, task)
-        # Detect source changes between discovery and publication.
         after = inventory(root, output, max_files, max_bytes)
         if {p: f["sha256"] for p, f in after["files"].items()} != {p: f["sha256"] for p, f in inv["files"].items()}:
             raise ValueError("Source changed during reconstruction; nothing published. Retry against a stable checkout.")
         write(target, docs, metadata, manifest)
         return {"repository": str(root), "output": str(target), "command": command,
-                "coverage": manifest["coverage"], "graph_status": graph["status"],
-                "next_step": "Investigate pending native tasks, apply source-reviewed findings, then verify and refresh the graph."}
+                "coverage": manifest["coverage"],
+                "next_step": "Investigate pending native tasks, apply source-reviewed findings, then verify the resulting spec."}
