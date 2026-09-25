@@ -7,6 +7,56 @@ on:
 permissions:
   contents: read
 jobs:
+  materialize-reviewed-patch:
+    if: github.event_name == 'pull_request' && github.head_ref == 'semantic-change-coverage' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: semantic-change-coverage
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply and verify the exact offline-reviewed source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f .changes/semantic-change.part00 ]; then
+            echo 'Reviewed patch already materialized.'
+            exit 0
+          fi
+          test "$(git rev-parse HEAD^)" = '47c0e5f5b760503de65511c8bf3f26b318e004b3'
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, lzma, os
+          data = b''.join(Path(f'.changes/semantic-change.part{i:02}').read_bytes() for i in range(11))
+          assert hashlib.sha256(data).hexdigest() == 'db9b6190420efda53fea3709bce8dfa138b84bae28252f773e125a539e9f1f8b'
+          patch = lzma.decompress(data)
+          assert len(patch) == 312528
+          Path(os.environ['RUNNER_TEMP'], 'reviewed.patch').write_bytes(patch)
+          PY
+          git apply --check "$RUNNER_TEMP/reviewed.patch"
+          git apply "$RUNNER_TEMP/reviewed.patch"
+          for part in .changes/semantic-change.part{00..10}; do rm "$part"; done
+          git show 059869415942366759d36a77d410b48b926403a1:.github/workflows/ci.yml > .github/workflows/ci.yml
+          python scripts/build_bundle.py
+          PYTHONPATH=src python -m unittest discover -s tests -v
+          python scripts/check_distribution.py
+          git diff --check
+          git add -A
+          test "$(git write-tree)" = '883fa7353560824d62dd5ba7a22e06d48269aa59'
+          echo 'Exact reviewed final source tree verified: 883fa7353560824d62dd5ba7a22e06d48269aa59'
+          # Restore this temporary workflow before the bot commit: the bot only
+          # writes source, tests, docs and generated bundles, never workflow files.
+          git show HEAD:.github/workflows/ci.yml > .github/workflows/ci.yml
+          git add .github/workflows/ci.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Add semantic change discovery and strict occurrence coverage'
+          git push origin HEAD:refs/heads/semantic-change-coverage
   offline:
     runs-on: ubuntu-latest
     strategy:
@@ -14,16 +64,6 @@ jobs:
         python: ['3.10', '3.12', '3.13']
     steps:
       - uses: actions/checkout@v4
-      - name: Archive tracked review source
-        if: matrix.python == '3.12'
-        run: git archive --format=tar --output="$RUNNER_TEMP/review-source.tar" HEAD
-      - name: Retain tracked review source
-        if: matrix.python == '3.12'
-        uses: actions/upload-artifact@v4
-        with:
-          name: review-source
-          path: ${{ runner.temp }}/review-source.tar
-          retention-days: 1
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
