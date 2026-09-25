@@ -1,21 +1,21 @@
 # Release acceptance and boundaries
 
-The v1 capability set is implemented as an engine plus native-agent workflow. Reconstruction quality depends on actually performing and reviewing investigations; an initial inventory is never presented as a completed semantic spec.
+The supplied design's v1 capability set is implemented as an engine plus native-agent workflow. Reconstruction quality depends on actually performing and reviewing the investigations; an initial inventory is never presented as a completed semantic spec.
 
 | Requirement | Implementation / validation |
 | --- | --- |
-| Tool-agnostic code intelligence | Native session follows applicable repository/host instructions and may use any installed structural/symbol/search tool; external results remain retrieval hints and never evidence |
-| Repository/framework discovery | Git inventory, manifests, language extensions, exact Python symbol extraction and native cartographer interpretation |
-| Module/architecture map | Evidence-backed directory membership baseline; reviewed findings add actual responsibilities |
-| Entrypoints/features/flows | Candidates plus entrypoint/domain/runtime specialists and explicit missing-link gaps |
-| UI/backend, settings, data and tests | Dedicated specialist contracts and typed edges |
-| Confidence/evidence | Closed schemas, exact line/file hashes, source-reviewed claims, conflicts and UNKNOWNs |
-| Agent readiness | Instruction inventory and bounded diagnostics |
-| Markdown spec | Concept pages, source-linked change maps, navigation, coverage and gaps; human-note protection |
-| Incremental Git refresh | Base diff plus working-tree snapshots, renamed/deleted/new files, semantic impact and focused tasks |
-| Claude/Codex providers | Native task adapters, self-contained skill, role cards and plugin manifests |
-| Setup/update/release | Pinned Git installation, host marketplace instructions, CI and release archives |
+| Tool-agnostic retrieval | Native sessions use repository-configured tools; the engine has no vendor dependency or refresh requirement |
+| Repository/framework discovery | Git inventory, manifests, language extensions, exact Python symbol extraction and native cartographer interpretation; bounded/excluded inventory tests |
+| Module/architecture map | Evidence-backed directory membership baseline; cartographer/deployment findings add actual responsibilities |
+| Entrypoints/features/flows | Candidates plus entrypoint/domain/runtime specialists; prepared checkout findings demonstrate supported behavior and missing HTTP binding |
+| UI/backend, settings, data and tests | Dedicated specialist contracts and typed edges; prepared setting → cache invalidation → checkout gate evidence, explicit gap instead of a fictional UI/server connection |
+| Confidence/evidence | Closed schemas, exact line and file hashes, source-reviewed established claims, conflicts and UNKNOWNs; invalid/stale/fabricated evidence rejection tests |
+| Agent readiness | Instruction inventory and bounded diagnostics; stale fixture documentation remains separate from source truth |
+| Markdown spec | Relevant concept pages, source-linked change maps, navigation, coverage and gaps; human-note/generated-edit protection tests |
+| Incremental Git refresh | Base diff plus working-tree snapshots, renamed/deleted/new files, semantic blast radius, stale quarantine and focused tasks |
+| Claude/Codex providers | Native task adapters, shared self-contained skill, Claude role cards and both plugin manifests; distribution/native manifest checks |
+| Setup/update/release | Pinned Git installation, host marketplace instructions, CI, versioned release and checksum archives |
 
-Git history is available to the deep-mode history specialist, but no statistical co-change engine or runtime trace executor is claimed. CI verifies offline contracts. No hosted server deployment, paid headless provider driver or live-model quality evaluation is implied.
+Git history is available to the deep-mode history specialist, but no statistical co-change engine or runtime trace executor is claimed. CI verifies this tool's offline contracts; optional `verify --require-complete` is available for consuming repositories. Interactive visualization and automatic external index extraction remain outside v1. No hosted server deployment, PyPI upload, paid headless provider driver, live-model quality evaluation or store approval is implied by the GitHub release.
 
-Fixture assertions measure engine behavior: citation integrity, state transitions, preservation and uncertainty. They do not establish model feature-location recall or semantic truth.
+Fixture assertions measure engine behavior: citation integrity, state transitions, preservation and uncertainty. They do not measure model feature-location recall, relationship accuracy or false-intent rates. Those require a separately authorized evaluation plan; paid synthetic testing is forbidden here.
