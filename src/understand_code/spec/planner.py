@@ -1,5 +1,6 @@
 """Adaptive role routing and bounded native investigation tasks."""
 import json
+from collections import deque
 from pathlib import Path
 
 from ..graphify import context
@@ -26,6 +27,33 @@ ROLES = {
     "spec-curator": (None, "Check navigation, coverage, uncertainty and task/review handoffs against accepted findings."),
 }
 MODES = {"quick": (6, 24), "standard": (18, 40), "deep": (36, 60)}
+
+
+def balanced_paths(paths: list[str]) -> list[str]:
+    """Round-robin directory branches before slicing a bounded task.
+
+    A large early-sorting package must not consume every reconnaissance slot.
+    This is inventory scheduling, not a claim about semantic package boundaries.
+    """
+    tree = {"files": [], "children": {}}
+    for path in sorted(set(paths)):
+        node = tree
+        for part in Path(path).parts[:-1]:
+            node = node["children"].setdefault(part, {"files": [], "children": {}})
+        node["files"].append(path)
+
+    def walk(node):
+        queue = deque([iter(node["files"])] if node["files"] else [])
+        queue.extend(walk(node["children"][key]) for key in sorted(node["children"]))
+        while queue:
+            current = queue.popleft()
+            try:
+                yield next(current)
+            except StopIteration:
+                continue
+            queue.append(current)
+
+    return list(walk(tree))
 
 
 def plan(inventory: dict, graph: dict, mode: str, focus: str | None = None,
@@ -70,6 +98,7 @@ def plan(inventory: dict, graph: dict, mode: str, focus: str | None = None,
         if not selected:
             continue
         # Include adjacent feature files; a task can request scope expansion explicitly.
+        selected = balanced_paths(selected)
         selected_set = set(selected)
         parents = {str(Path(s).parent) for s in selected}
         adjacent = [p for p in paths if p not in selected_set and str(Path(p).parent) in parents]
