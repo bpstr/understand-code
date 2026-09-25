@@ -83,6 +83,7 @@ def validate(bundle: dict, root, output: str, task: dict, known_entities: list[d
                        for key, e in refs.items() if key in entity["evidence"]):
                 raise ValueError("Code reference lacks supporting claim evidence")
     occurrence_keys = {}
+    supplied_ids = {entity["id"] for entity in bundle["entities"]}
     for entity in entity_map.values():
         occurrence = entity.get("occurrence")
         if not occurrence:
@@ -92,7 +93,7 @@ def validate(bundle: dict, root, output: str, task: dict, known_entities: list[d
                     tuple(sorted((ref["repository"], ref["path"], ref["anchor"])
                                  for ref in occurrence["implementation"])))
         previous = occurrence_keys.get(identity)
-        if previous and previous != entity["id"] and any(e["id"] == entity["id"] for e in bundle["entities"]):
+        if previous and previous != entity["id"] and ({previous, entity["id"]} & supplied_ids):
             raise ValueError("Duplicate occurrence identity; distinct uses need distinct stable anchors")
         occurrence_keys[identity] = entity["id"]
     for item in bundle["entities"] + bundle["relations"]:

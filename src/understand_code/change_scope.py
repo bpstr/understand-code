@@ -100,7 +100,7 @@ def resolve(topic: str, inv: dict, entities: list[dict], relations: list[dict], 
             intent: str = "cross_cutting", examples: list[str] | None = None,
             boundaries: list[str] | None = None, exclusions: list[str] | None = None,
             max_depth: int = 8, max_nodes: int = 500) -> dict:
-    if intent not in INTENTS or max_depth < 1 or max_nodes < 1 or not topic.strip():
+    if intent not in INTENTS or max_depth < 1 or max_nodes < 1 or not normalize(topic):
         raise ValueError("Invalid semantic scope request or traversal budget")
     boundaries = validate_boundaries(boundaries or [])
     exclusions = validate_boundaries(exclusions or [])

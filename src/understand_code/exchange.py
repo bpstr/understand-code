@@ -74,7 +74,7 @@ def validate_references(envelope: dict) -> None:
                 raise ValueError("Unbound code reference or invalid range")
         if claim.get("kind") == "occurrence":
             occurrence = claim.get("occurrence", {})
-            if not occurrence or entities.get(occurrence["surface"], {}).get("kind") != "ui_surface" or occurrence["concept"] not in entities:
+            if not occurrence or entities.get(occurrence["surface"], {}).get("kind") != "ui_surface" or entities.get(occurrence["concept"], {}).get("kind") not in ("concept", "feature", "setting", "data_entity"):
                 raise ValueError("Unresolved occurrence membership reference")
     if any(e["kind"] == "occurrence" for e in envelope["entities"]) or any(e["kind"] != "occurrence" for e in envelope["occurrences"]):
         raise ValueError("Occurrences must use the dedicated wire collection")
@@ -84,6 +84,10 @@ def validate_references(envelope: dict) -> None:
         rule = RELATION_ENDPOINTS.get(relation["kind"])
         if rule and (entities[relation["source"]]["kind"] not in rule[0] or entities[relation["target"]]["kind"] not in rule[1]):
             raise ValueError("Illegal exchange relation endpoints")
+        if relation["kind"] in ("occurs_on", "realizes"):
+            field = "surface" if relation["kind"] == "occurs_on" else "concept"
+            if entities[relation["source"]].get("occurrence", {}).get(field) != relation["target"]:
+                raise ValueError("Exchange relation contradicts occurrence membership")
 
 
 def import_knowledge(root: Path, output: str, file: Path) -> dict:
@@ -126,6 +130,8 @@ def import_knowledge(root: Path, output: str, file: Path) -> dict:
                 if excluded(ref["path"], output):
                     raise ValueError("Exchange code reference targets excluded material")
                 safe_path(root, ref["path"])
+                if manifests[ref["repository"]]["files"].get(ref["path"]) != ref["sha256"]:
+                    gap(claim["id"], "Code reference disagrees with imported source manifest", ref["path"])
                 from .evidence import read_source, source_hash
                 try:
                     text = read_source(root, ref["path"])

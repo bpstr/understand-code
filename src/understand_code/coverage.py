@@ -66,6 +66,7 @@ def _composition(surface: str, entities: dict, relations: list[dict], refs: dict
             if other and established(relation) and established(entities.get(other, {})):
                 edges.add(relation["id"])
                 paths.update(_paths(entities[other], refs))
+                paths.update(_paths(relation, refs))
                 queue.append(other)
     return sorted(paths), sorted(edges)
 
@@ -197,6 +198,9 @@ def apply_review(scope: dict, packet: dict, root: Path, output: str) -> dict:
         if disposition == "excluded":
             if item.get("exclusion") not in exclusions:
                 raise ValueError("Unauthorized scope narrowing: exclusion must be declared in the standard")
+            surviving = set(obligation["consumer_paths"]).intersection(scope["target"]["files"])
+            if surviving and not paths.intersection(surviving):
+                raise ValueError("Exclusion must inspect this occurrence/surface, not an unrelated file")
         elif disposition == "removed":
             if obligation["present"] or item.get("intentional") is not True:
                 raise ValueError("Removal requires an absent obligation and intentional reviewed removal")

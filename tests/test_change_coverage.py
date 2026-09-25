@@ -530,5 +530,84 @@ class ChangeCoverageTests(unittest.TestCase):
         self.assertTrue(any((self.root / OUT / "concepts").glob("*.md")))
 
 
+    def test_punctuation_only_scope_is_rejected(self):
+        state = self.model()
+        for topic in ("!!!", "---", "___", "  "):
+            with self.subTest(topic=topic), self.assertRaisesRegex(ValueError, "scope|searchable"):
+                resolve(topic, state["inventory"], state["entities"], state["relations"], state["evidence"])
+
+    def test_exclusion_must_inspect_its_own_present_surface(self):
+        standard = copy.deepcopy(STANDARD)
+        standard["exclusions"] = [{"id": "exclusion.profile", "description": "Profile is a deliberately reviewed exception."}]
+        scope, state = self.scope(request=self.request(standard=standard))
+        packet = self.packet(scope, state)
+        item = next(x for x in packet["dispositions"] if scope["obligations"][x["obligation"]]["surface"] == "ui_surface.profile")
+        item.update(disposition="excluded", exclusion="exclusion.profile", criteria=[])
+        original = item["evidence"][:]
+        item["evidence"] = [next(e["id"] for e in state["evidence"] if e["path"] == "pages/Billing.tsx")]
+        with self.assertRaisesRegex(ValueError, "inspect|surface"):
+            self.reviewed(scope, state, packet)
+        item["evidence"] = original
+        self.assertTrue(self.assessment(self.reviewed(scope, state, packet), state)["change_complete"])
+
+    def test_exchange_rejects_wrong_occurrence_concept_kind(self):
+        state = self.model()
+        wire = export_knowledge(state, state["inventory"])
+        wire["occurrences"][0]["occurrence"]["concept"] = "component.frame"
+        with self.assertRaisesRegex(ValueError, "membership"):
+            validate_references(wire)
+
+    def test_exchange_rejects_contradictory_occurrence_edges(self):
+        state = self.model()
+        wire = export_knowledge(state, state["inventory"])
+        relation = next(r for r in wire["relations"] if r["kind"] == "occurs_on")
+        relation["target"] = "ui_surface.profile"
+        with self.assertRaisesRegex(ValueError, "membership"):
+            validate_references(wire)
+
+    def test_exchange_quarantines_code_reference_outside_producer_manifest(self):
+        state = self.model()
+        wire = export_knowledge(state, state["inventory"])
+        # Current local content is not enough: the producer must have inventoried it.
+        wire["evidence"] = [e for e in wire["evidence"] if e["path"] != "components/index.ts"]
+        for claim in wire["entities"] + wire["occurrences"] + wire["relations"]:
+            claim["evidence"] = [key for key in claim["evidence"] if key in {e["id"] for e in wire["evidence"]}]
+        ref = next(e for e in state["evidence"] if e["path"] == "components/index.ts")
+        wire["entities"][0]["code_references"] = [{"repository": "repository.local", "path": ref["path"],
+            "anchor": "reexport", "sha256": ref["sha256"], "start_line": 1, "end_line": ref["end_line"]}]
+        manifest = wire["repositories"][0]["manifest"]
+        del manifest["files"][ref["path"]]
+        manifest["id"] = fingerprint({k: v for k, v in manifest.items() if k != "id"})
+        imported = import_knowledge(self.root, OUT, self.file("manifest-gap.json", wire))
+        self.assertEqual(imported["status"], "quarantined")
+        self.assertTrue(any("manifest" in g["reason"].lower() for g in imported["gaps"]))
+
+    def test_shared_dependency_keeps_relationship_only_source(self):
+        state = self.model()
+        ref = next(e for e in state["evidence"] if e["path"] == "components/index.ts")
+        for entity in state["entities"]:
+            entity["evidence"] = [key for key in entity["evidence"] if key != ref["id"]]
+        relation = next(r for r in state["relations"] if r["id"] == "relation.frame-picture")
+        relation["evidence"] = [ref["id"]]
+        scope, _ = self.scope(state)
+        obligation = next(o for o in scope["obligations"].values() if o["surface"] == "ui_surface.profile")
+        self.assertIn("components/index.ts", obligation["dependency_paths"])
+
+    def test_updated_occurrence_cannot_collide_with_later_known_identity(self):
+        state = self.model(second=True)
+        p = plan(state["inventory"], GRAPH, "deep")
+        task = next(t for t in p["tasks"] if t["role"] == "repository-cartographer")
+        existing = [e for e in state["entities"] if e["kind"] == "occurrence" and e["occurrence"]["surface"] == "ui_surface.profile"]
+        self.assertEqual(len(existing), 2)
+        updated = copy.deepcopy(existing[0])
+        updated["occurrence"] = copy.deepcopy(existing[1]["occurrence"])
+        updated.pop("review", None)
+        bundle = {"schema_version": 1, "task_id": task["id"], "snapshot": task["snapshot"],
+                  "entities": [updated], "relations": [], "evidence": state["evidence"],
+                  "gaps": [], "review": REVIEW}
+        with self.assertRaisesRegex(ValueError, "Duplicate occurrence identity"):
+            validate(bundle, self.root, OUT, task, state["entities"])
+
+
 if __name__ == "__main__":
     unittest.main()
