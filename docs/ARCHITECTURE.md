@@ -6,7 +6,7 @@ The deterministic engine is Python 3.10+ using the standard library only. Host-n
 | --- | --- |
 | `cli.py` | Commands, local/worktree policy, structured output and exit status |
 | `discovery.py`, `git.py` | Git-aware bounded inventory, exact Python syntax, heuristic candidates, diff/rename handling |
-| `graphify.py` | Node-link import, bounded retrieval context and semantic export |
+| Repository/host instructions | Select optional code-intelligence tools for native-session retrieval |
 | `spec/planner.py`, `providers/` | Adaptive scopes and native Claude/Codex task contracts |
 | `evidence.py`, `contracts.py`, `findings.py` | Safe paths, source hashes, closed JSON input schemas, source review contracts and contradiction reconciliation |
 | `impact.py` | Evidence-to-concept mapping and conservative transitive dependency/consumer impact |
@@ -18,7 +18,7 @@ The deterministic engine is Python 3.10+ using the standard library only. Host-n
 
 ## State
 
-The spec stores a versioned manifest, scan inventory, current bounded plan, typed entities/relations/evidence, gaps, audit, impact and graph handoff under `_meta`. Accepted native responses are preserved by content hash. A task's ID includes its role, file scope and source snapshot. Applying a response for a changed snapshot fails before writes.
+The spec stores a versioned manifest, scan inventory, current bounded plan, typed entities/relations/evidence, gaps, audit, impact under `_meta`. Accepted native responses are preserved by content hash. A task's ID includes its role, file scope and source snapshot. Applying a response for a changed snapshot fails before writes.
 
 Evidence IDs include both the excerpt and whole-file hash. Updates do not quietly refresh citations under unchanged claim IDs. Evidence-dependent and semantically connected claims are quarantined as UNKNOWN. Reviewed replacements may explicitly supersede stale/conflicting claims; conflicting alternatives are retained in archived responses.
 
@@ -26,8 +26,12 @@ No-op updates retain unfinished tasks. Focused runs carry unfinished wider scope
 
 ## Trust and limits
 
-Source, graph exports and provider responses are untrusted input. The engine does not evaluate their contents. JSON schemas close the input shape, references stay within task scope, and filesystem reads/writes reject symlink traversal. Known secret/dependency/build paths are excluded; `.understand-codeignore` adds repository-specific exclusions. This is not a general secret detector or OS sandbox.
+Source, external retrieval output and provider responses are untrusted input. The engine does not evaluate their contents. JSON schemas close the input shape, references stay within task scope, and filesystem reads/writes reject symlink traversal. Known secret/dependency/build paths are excluded; `.understand-codeignore` adds repository-specific exclusions. This is not a general secret detector or OS sandbox.
 
 Hash checks prove identity and freshness, not semantic entailment. `source-reviewed` records an accountable judgment; the software cannot prevent someone deliberately lying in that field. Reviewers must inspect cited code, distinguish declarations from execution and preserve unknowns. Generated natural-language details obey the same confidence/evidence contract as summaries.
 
 Output is staged beside the destination and swapped with rollback on ordinary failures. This is process-level transactional replacement, not a crash-proof database transaction. A hard kill can require backup recovery; see [maintenance](../skills/understand-code/references/maintenance.md). The target source tree is not changed and the engine never commits or pushes it.
+
+## Retrieval boundary
+
+The engine does not import vendor graphs, expose vendor-specific CLI flags, or require external index refresh. Native sessions select configured tools using applicable repository/ancestor instructions. Results narrow retrieval; accepted claims still require exact current-source evidence. Historical files from older versions are not promoted into the current model.

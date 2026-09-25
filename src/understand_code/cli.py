@@ -27,7 +27,6 @@ def parser() -> argparse.ArgumentParser:
         if command in ("bootstrap", "focus", "update", "apply"):
             cmd.add_argument("--mode", choices=("quick", "standard", "deep"), default="standard")
             cmd.add_argument("--provider", choices=("codex", "claude"), default="codex", help="Native task prompt format; never launches a provider")
-            cmd.add_argument("--graph", default="graphify-out/graph.json", help="Existing Graphify node-link export")
             cmd.add_argument("--findings", type=Path, action="append", default=[], help="Prepared/native JSON response to ingest; repeatable")
         if command == "bootstrap":
             cmd.add_argument("path", nargs="?", help="Repository path")
@@ -59,7 +58,7 @@ def main(argv=None) -> int:
         if args.command in ("bootstrap", "focus", "update", "apply"):
             result = run(root, args.output, args.command, args.mode, args.provider,
                          getattr(args, "topic", None), getattr(args, "base", None), args.findings,
-                         args.graph, args.max_files, args.max_bytes)
+                         args.max_files, args.max_bytes)
         elif args.command == "evidence":
             if excluded(args.path, args.output):
                 raise ValueError("Cannot cite generated output, secrets, or excluded paths")

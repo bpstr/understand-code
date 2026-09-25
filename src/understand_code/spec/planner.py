@@ -3,7 +3,6 @@ import json
 from collections import deque
 from pathlib import Path
 
-from ..graphify import context
 from ..ontology import digest, stable_id
 
 ROLES = {
@@ -56,7 +55,7 @@ def balanced_paths(paths: list[str]) -> list[str]:
     return list(walk(tree))
 
 
-def plan(inventory: dict, graph: dict, mode: str, focus: str | None = None,
+def plan(inventory: dict, mode: str, focus: str | None = None,
          impact: dict | None = None, entities: list[dict] | None = None,
          relations: list[dict] | None = None, evidence: list[dict] | None = None) -> dict:
     max_tasks, max_paths = MODES[mode]
@@ -86,7 +85,6 @@ def plan(inventory: dict, graph: dict, mode: str, focus: str | None = None,
     if mode != "deep":
         roles = [r for r in roles if r != "history-analyst"]
     tasks, deferred = [], []
-    # One slice per role before additional slices keeps recon multidisciplinary.
     queue = []
     for role in roles:
         category, objective = ROLES[role]
@@ -97,7 +95,6 @@ def plan(inventory: dict, graph: dict, mode: str, focus: str | None = None,
             selected = [p for p in paths if inventory["files"][p]["manifest"] or ".github/" in p or "deploy" in p.lower()]
         if not selected:
             continue
-        # Include adjacent feature files; a task can request scope expansion explicitly.
         selected = balanced_paths(selected)
         selected_set = set(selected)
         parents = {str(Path(s).parent) for s in selected}
@@ -112,13 +109,13 @@ def plan(inventory: dict, graph: dict, mode: str, focus: str | None = None,
                 "phase": ("synthesis" if role == "feature-synthesizer" else "verification" if role == "relationship-verifier"
                           else "curation" if role == "spec-curator" else "reconnaissance" if role in
                           ("repository-cartographer", "entrypoint-mapper", "domain-discoverer", "instruction-auditor") else "tracing"),
-                "paths": selected, "status": "pending", "graph_context": context(graph, selected),
+                "paths": selected, "status": "pending",
                 "candidate_evidence": [c for c in candidates if c["path"] in selected][:120],
                 "limits": {"max_paths": max_paths, "max_findings": 500, "execution": "read-only; no repository code execution"},
                 "contract": {"schema_version": 1, "task_id": task_id, "snapshot": snapshot,
                              "entities": [], "relations": [], "evidence": [], "gaps": [],
                              "review": {"status": "unreviewed"}},
-                "completion": "Return source-bound findings or explicit gaps. Request follow-up scope when paths are insufficient. Never fill unknown links with plausible claims."}
+                "completion": "Return source-bound findings or explicit gaps. Use repository-configured code-intelligence tools only as retrieval aids when applicable instructions describe them. Request follow-up scope when paths are insufficient. Never fill unknown links with plausible claims."}
         if len(tasks) < max_tasks:
             tasks.append(task)
         else:

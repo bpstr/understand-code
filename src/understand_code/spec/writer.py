@@ -22,7 +22,6 @@ def jsonl(values: list) -> str:
 
 
 def escape(text: str) -> str:
-    # Claims remain plain text; provider content cannot inject managed regions or HTML.
     value = str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", " ")
     for char in ("\\", "`", "*", "_", "[", "]", "|", "#"):
         value = value.replace(char, "\\" + char)
@@ -92,7 +91,7 @@ def render(state: dict, output: str) -> dict[str, str]:
     docs["overview.md"] = page("Repository overview", f"Scanned {len(inv['files'])} text files ({inv['bytes_read']} bytes).\n\n"
                               + "Languages by file extension: " + escape(json.dumps(inv["languages"]))
                               + ". Framework and behavioral interpretations require native source review.\n\n"
-                              + f"Graphify: {state['graph']['status']}. {escape(state['graph'].get('warning', ''))}\n\n"
+                              + "Code-intelligence retrieval is host-managed according to applicable agent instructions; external tool output is never source evidence.\n\n"
                               + "See `_meta/inventory.json` for manifests, candidates, evidence and scan exclusions.")
     pending = sum(t["status"] != "accepted" for t in state["plan"]["tasks"])
     gaps = f"Pending specialist tasks: {pending}. Deferred scopes: {len(state['plan']['deferred'])}. Skipped files: {len(inv['skipped'])}.\n\n"
@@ -135,7 +134,6 @@ def write(output: Path, docs: dict[str, str], metadata: dict[str, str], manifest
                     raise ValueError(f"Unmanaged document would be overwritten: {path}")
                 prior = file.read_text()
                 docs[path] = generated(text) + prior[prior.index(END) + len(END):]
-        # Retired pages remain, explicitly retired. Human notes are never deleted.
         for path in set(old.get("managed", {})) - docs.keys():
             prior = (output / path).read_text()
             docs[path] = generated(page("Retired concept", "This concept is no longer in the current model. Consult Git history and maintainer notes; do not use it as current evidence.")) + prior[prior.index(END) + len(END):]

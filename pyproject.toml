@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [{name = "bpstr"}]
-keywords = ["architecture", "codebase", "claude", "codex", "agent-skills", "graphify"]
+keywords = ["architecture", "codebase", "claude", "codex", "agent-skills", "code-intelligence"]
 classifiers = ["Programming Language :: Python :: 3", "Topic :: Software Development :: Documentation"]
 dependencies = []
 

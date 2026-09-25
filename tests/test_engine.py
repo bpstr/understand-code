@@ -11,12 +11,11 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from understand_code.cli import main
+from understand_code.cli import main, parser
 from understand_code.discovery import inventory
 from understand_code.evidence import capture, read_source, safe_path
 from understand_code.findings import validate, reconcile
 from understand_code.git import changes, head, isolate
-from understand_code.graphify import load as graph_load, export
 from understand_code.orchestrator import load, run
 from understand_code.spec.verifier import verify
 from understand_code.spec.writer import END, write
@@ -224,14 +223,20 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(entity["confidence"], "UNKNOWN")
         self.assertTrue(any(g.get("alternatives") for g in self.state()["gaps"]))
 
-    def test_graph_import_does_not_promote_edges_to_facts(self):
-        (self.root / "graphify-out").mkdir()
-        (self.root / "graphify-out/graph.json").write_text(json.dumps({"nodes": [{"id": "a", "file": "checkout.py"}],
-                                                                    "links": [{"source": "a", "target": "missing", "relation": "calls"}]}))
-        self.bootstrap()
-        self.assertEqual(self.state()["manifest"]["graph_status"], "imported-unverified")
-        self.assertEqual(self.state()["relations"], [])
-        self.assertEqual(export([], [])["graph"]["producer"], "understand-code")
+    def test_bootstrap_has_no_vendor_code_intelligence_dependency(self):
+        result = self.bootstrap()
+        state = self.state()
+        self.assertNotIn("graph_status", state["manifest"])
+        self.assertIn("host-managed", state["manifest"]["code_intelligence"])
+        self.assertNotIn("graph_context", json.dumps(state["plan"]))
+        self.assertNotIn("graphify", json.dumps(result).lower())
+        self.assertNotIn("knowledge_gap.graphify", {g["id"] for g in state["gaps"]})
+        for command in ("bootstrap", "focus", "update", "apply"):
+            with self.subTest(command=command), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as error:
+                    parser().parse_args([command, "--graph", "old-export.json"])
+                self.assertEqual(error.exception.code, 2)
+
 
     def test_git_base_includes_rename_and_unstaged_change(self):
         self.init_git()
