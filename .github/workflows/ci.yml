@@ -14,6 +14,16 @@ jobs:
         python: ['3.10', '3.12', '3.13']
     steps:
       - uses: actions/checkout@v4
+      - name: Archive tracked review source
+        if: matrix.python == '3.12'
+        run: git archive --format=tar --output="$RUNNER_TEMP/review-source.tar" HEAD
+      - name: Retain tracked review source
+        if: matrix.python == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-source
+          path: ${{ runner.temp }}/review-source.tar
+          retention-days: 1
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
