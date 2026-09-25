@@ -7,12 +7,15 @@
 - Add five coverage axes, generated occurrence/change/source maps, external check provenance and conservative stale-review invalidation.
 - Add standalone Change Knowledge Exchange v1 with a pinned closed schema, prepared fixtures and candidate-only/quarantined imports.
 - Preserve legacy investigation verification and conservative impact invalidation. Unknown focus now returns an explicit discovery gap and bounded plan.
+- Remove vendor-specific code-intelligence coupling from the engine and CLI.
+- Let applicable repository/host agent instructions select any installed code-intelligence retrieval tool.
+- Keep external retrieval results explicitly unverified until checked against current source evidence.
 
 ## 1.0.0 — 2026-09-06
 
 - Add deterministic codebase inventory, native specialist task planning and evidence-bound findings ingestion.
 - Add semantic entities, directed relationships, confidence states, source-reviewed claims and contradiction gaps.
 - Add Markdown Codebase Specs, protected human notes, transactional writes and integrity/freshness verification.
-- Add incremental Git impact, scoped focus, read-only instruction audits and Graphify import/export handoffs.
+- Add incremental Git impact, scoped focus and read-only instruction audits.
 - Ship Claude Code/Codex plugins, self-contained Open Agent Skill, Python CLI, offline regression tests and install/update guides.
 - Keep provider execution, paid testing and runtime trace execution outside the engine.

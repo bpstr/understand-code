@@ -6,6 +6,10 @@ Understand Code is a Python CLI and self-contained Claude Code / Codex skill. It
 
 It combines deterministic inventory and validation with bounded investigations in your existing Claude or Codex session. It never starts provider subprocesses, executes the target application, or silently spends API credits.
 
+## Code intelligence
+
+Understand Code is tool-agnostic. Native investigations follow applicable repository/ancestor `AGENTS.md`, `CLAUDE.md` and host instructions to select available code-intelligence tools. When none is configured, available or sufficient, use bounded source/file search. External output is retrieval context, never source evidence. See [retrieval policy](docs/CODE_INTELLIGENCE.md).
+
 ## Install
 
 **Codex plugin**
@@ -38,15 +42,15 @@ The plugin already includes the runner; installing the CLI is optional. See [com
 ## Workflow
 
 ```text
-Source + optional Graphify graph
+Source + repository-configured retrieval tools
           ↓ deterministic inventory
 Bounded native specialist investigations
           ↓ cited findings + source review
-Codebase Spec + semantic graph sidecar
+Codebase Spec + typed semantic model
           ↓ source verification
 Task planning / implementation / deep-code-review
           ↓ Git diff + semantic impact
-Updated Codebase Spec → external graph refresh
+Updated Codebase Spec
 ```
 
 ```bash
@@ -72,7 +76,6 @@ Bootstrap inventories the repository and writes an investigation plan. It **does
 | Incremental updates | Git base + working-tree hashes; renames/deletions; transitive semantic impact; stale claims demoted to UNKNOWN |
 | Human knowledge | Maintainer notes preserved; generated edits block replacement; conflicts retain alternatives |
 | Agent readiness | Instruction scopes, size, duplicate content, missing link observations and bounded recommendations |
-| Graphify | Existing node-link import, scoped graph context, Markdown links, typed semantic sidecar and explicit external refresh handoff |
 | Distribution | Codex/Claude manifests and marketplaces, standalone skill runner, installable Python package, offline CI and release archives |
 
 The default output includes overview, concept pages, evidence, instruction/readiness reports, operational pointers, glossary and gaps. Relevant feature/flow/settings/UI/data pages appear when findings support them. Empty architecture claims are not filled with plausible prose.
@@ -81,9 +84,9 @@ The default output includes overview, concept pages, evidence, instruction/readi
 
 `EXTRACTED` means reviewed, direct evidence; `CORROBORATED` requires independent evidence; `INFERRED` is incomplete interpretation; `UNKNOWN` is an unresolved question. Mechanical checks can establish that a citation exists and is current. **They cannot prove a natural-language claim is true.** Reviewer provenance, gaps and coverage remain visible.
 
-Graph imports are retrieval hints. Regex matches are candidates. Test source establishes assertions, not a passing test run. Static links do not establish runtime reachability. Architectural intent needs explicit evidence. There is no live-provider quality claim: the shipped regression suite uses prepared fixtures only.
+External tool results are retrieval hints. Regex matches are candidates. Test source establishes assertions, not a passing test run. Static links do not establish runtime reachability. Architectural intent needs explicit evidence. There is no live-provider quality claim: the shipped regression suite uses prepared fixtures only.
 
-This release does not execute runtime traces, refresh Graphify through an undocumented command, or run autonomous paid headless agents. Native sessions provide reasoning; an installed Graphify integration performs its own refresh. These boundaries and the [v1 acceptance map](docs/ACCEPTANCE.md) distinguish implemented capabilities from future extensions.
+This release does not execute runtime traces or run autonomous paid headless agents. Native sessions provide reasoning and optional repository-configured retrieval; no external index refresh is owned by the engine. These boundaries and the [v1 acceptance map](docs/ACCEPTANCE.md) distinguish implemented capabilities from future extensions.
 
 ## Change completeness, separately from investigation completeness
 

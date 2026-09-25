@@ -3,12 +3,11 @@
 Use the plugin for the full workflow. The standalone CLI deliberately stops at a reviewable task plan until findings are supplied; there is no hidden provider call.
 
 1. `bootstrap` inventories source and prepares bounded tasks. Read the returned repository/output paths. Read the spec's `_meta/plan.json` and the matching `_meta/tasks/<task-id>.md`.
-2. In the existing Claude/Codex session, inspect the scoped source and graph neighborhoods. Each task includes its snapshot, role, file budget, candidate references and empty response contract. The skill sequences reconnaissance, targeted tracing, synthesis and review; the CLI validates state.
+2. In the existing Claude/Codex session, inspect scoped source, using optional repository-configured code-intelligence tools to narrow retrieval. External tool results are hints, not evidence. Each task includes its snapshot, role, file budget, candidate references and empty response contract. The skill sequences reconnaissance, targeted tracing, synthesis and review; the CLI validates state.
 3. Capture evidence using `understand-code evidence --repo <repo> checkout.py --start 4 --end 7`. Save the returned JSON in the response's `evidence` array. Its ID goes in each supported claim's evidence list. Read the range to confirm what it actually proves.
 4. Create entities, relations and gaps using the [contract](../skills/understand-code/references/evidence-contract.md). `CORROBORATED` requires independent sources and actual source review; count alone is insufficient. Existing test code proves what is asserted, not that execution passed.
 5. Save the response outside the source scan, for example `/tmp/checkout-findings.json`. Apply with `understand-code apply --repo <repo> --findings /tmp/checkout-findings.json`. Repeat `--findings` for multiple responses; endpoint dependencies are processed in argument order.
 6. Review generated Markdown and the diff. `verify` checks source freshness and content integrity; `status` shows pending tasks, deferred scopes and coverage. Finish important unresolved investigations or disclose their gaps.
-7. Refresh the structural graph with source plus Markdown through installed native tooling. `_meta/graphify-handoff.json` provides exact paths; the semantic sidecar is available for compatible consumers. Preserve the distinction between exported and indexed.
 
 The prepared fixture at `tests/fixtures/prepared/checkout.json` demonstrates claim shapes. It is deliberately incomplete as an ingestion file: tests bind it to their temporary fixture snapshot and task, with explicit prepared provenance. Do not apply it to a real repository.
 

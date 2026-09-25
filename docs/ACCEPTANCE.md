@@ -4,7 +4,7 @@ The supplied design's v1 capability set is implemented as an engine plus native-
 
 | Requirement | Implementation / validation |
 | --- | --- |
-| Graphify companion | Existing node-link import, scoped retrieval hints, Markdown source links, semantic sidecar and explicit external refresh handoff; fixture import/export contract |
+| Tool-agnostic retrieval | Native sessions use repository-configured tools; the engine has no vendor dependency or refresh requirement |
 | Repository/framework discovery | Git inventory, manifests, language extensions, exact Python symbol extraction and native cartographer interpretation; bounded/excluded inventory tests |
 | Module/architecture map | Evidence-backed directory membership baseline; cartographer/deployment findings add actual responsibilities |
 | Entrypoints/features/flows | Candidates plus entrypoint/domain/runtime specialists; prepared checkout findings demonstrate supported behavior and missing HTTP binding |
@@ -16,6 +16,6 @@ The supplied design's v1 capability set is implemented as an engine plus native-
 | Claude/Codex providers | Native task adapters, shared self-contained skill, Claude role cards and both plugin manifests; distribution/native manifest checks |
 | Setup/update/release | Pinned Git installation, host marketplace instructions, CI, versioned release and checksum archives |
 
-Git history is available to the deep-mode history specialist, but no statistical co-change engine or runtime trace executor is claimed. CI verifies this tool's offline contracts; optional `verify --require-complete` is available for consuming repositories. Interactive visualization and automatic external Graphify extraction remain outside v1. No hosted server deployment, PyPI upload, paid headless provider driver, live-model quality evaluation or store approval is implied by the GitHub release.
+Git history is available to the deep-mode history specialist, but no statistical co-change engine or runtime trace executor is claimed. CI verifies this tool's offline contracts; optional `verify --require-complete` is available for consuming repositories. Interactive visualization and automatic external index extraction remain outside v1. No hosted server deployment, PyPI upload, paid headless provider driver, live-model quality evaluation or store approval is implied by the GitHub release.
 
 Fixture assertions measure engine behavior: citation integrity, state transitions, preservation and uncertainty. They do not measure model feature-location recall, relationship accuracy or false-intent rates. Those require a separately authorized evaluation plan; paid synthetic testing is forbidden here.

@@ -28,7 +28,6 @@ FIXTURE = Path(__file__).parent / "fixtures/change-coverage"
 REVIEW = {"status": "source-reviewed", "reviewer": "prepared-fixture-reviewer",
           "method": "Prepared source inspection; no target application execution"}
 STANDARD = {"id": "standard.portrait", "criteria": [{"id": "criterion.rounded", "description": "Portraits use rounded-full.", "verification": "static"}], "required_checks": [], "exclusions": []}
-GRAPH = {"status": "unavailable", "nodes": [], "links": []}
 
 
 class ChangeCoverageTests(unittest.TestCase):
@@ -287,7 +286,7 @@ class ChangeCoverageTests(unittest.TestCase):
 
     def test_quick_budget_keeps_ui_and_reuse_and_defers_other_work(self):
         state = self.model()
-        p = plan(state["inventory"], GRAPH, "quick", "avatar presentation", entities=state["entities"], relations=state["relations"], evidence=state["evidence"], scope_options={"intent": "ui_standardization"})
+        p = plan(state["inventory"], "quick", "avatar presentation", entities=state["entities"], relations=state["relations"], evidence=state["evidence"], scope_options={"intent": "ui_standardization"})
         self.assertTrue({"ui-mapper", "reuse-mapper"} <= {t["role"] for t in p["tasks"]})
         self.assertTrue(p["deferred"])
         state["plan"] = p
@@ -313,11 +312,11 @@ class ChangeCoverageTests(unittest.TestCase):
 
     def test_followup_missing_source_is_durable(self):
         state = self.model()
-        p = plan(state["inventory"], GRAPH, "deep")
+        p = plan(state["inventory"], "deep")
         request = {"id": "followup.dynamic", "role": "ui-mapper", "paths": ["missing.tsx"], "question": "Resolve registry source."}
-        schedule_followups(p, [request], state["inventory"], GRAPH)
+        schedule_followups(p, [request], state["inventory"])
         self.assertEqual(p["followups"][0]["status"], "pending")
-        schedule_followups(p, [], state["inventory"], GRAPH)
+        schedule_followups(p, [], state["inventory"])
         self.assertEqual(len(p["followups"]), 1)
 
     def test_missing_standard_does_not_complete(self):
@@ -442,7 +441,7 @@ class ChangeCoverageTests(unittest.TestCase):
 
     def test_new_contracts_reject_bad_code_reference_and_duplicate_occurrence(self):
         state = self.model()
-        p = plan(state["inventory"], GRAPH, "deep")
+        p = plan(state["inventory"], "deep")
         task = next(t for t in p["tasks"] if t["role"] == "repository-cartographer")
         bundle = {"schema_version": 1, "task_id": task["id"], "snapshot": task["snapshot"],
                   "entities": [{k: v for k, v in e.items() if k != "review"} for e in state["entities"]],
@@ -595,7 +594,7 @@ class ChangeCoverageTests(unittest.TestCase):
 
     def test_updated_occurrence_cannot_collide_with_later_known_identity(self):
         state = self.model(second=True)
-        p = plan(state["inventory"], GRAPH, "deep")
+        p = plan(state["inventory"], "deep")
         task = next(t for t in p["tasks"] if t["role"] == "repository-cartographer")
         existing = [e for e in state["entities"] if e["kind"] == "occurrence" and e["occurrence"]["surface"] == "ui_surface.profile"]
         self.assertEqual(len(existing), 2)

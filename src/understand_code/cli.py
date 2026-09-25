@@ -29,7 +29,6 @@ def parser() -> argparse.ArgumentParser:
         if command in ("bootstrap", "focus", "update", "apply", "scope", "import-knowledge"):
             cmd.add_argument("--mode", choices=("quick", "standard", "deep"), default="standard")
             cmd.add_argument("--provider", choices=("codex", "claude"), default="codex", help="Native task prompt format; never launches a provider")
-            cmd.add_argument("--graph", default="graphify-out/graph.json", help="Existing Graphify node-link export")
             cmd.add_argument("--findings", type=Path, action="append", default=[], help="Prepared/native JSON response to ingest; repeatable")
         if command in ("scope", "apply", "verify"):
             cmd.add_argument("--change-scope", help="Existing snapshot-bound scope ID")
@@ -110,7 +109,7 @@ def main(argv=None) -> int:
                                           args.exclude_path, args.max_depth, args.max_nodes)
             result = run(root, args.output, args.command, args.mode, args.provider,
                          getattr(args, "topic", None), getattr(args, "base", None), args.findings,
-                         args.graph, args.max_files, args.max_bytes,
+                         args.max_files, args.max_bytes,
                          change_request=request, change_scope=getattr(args, "change_scope", None),
                          ledger_paths=getattr(args, "ledger", None),
                          knowledge_path=args.file if args.command == "import-knowledge" else None,

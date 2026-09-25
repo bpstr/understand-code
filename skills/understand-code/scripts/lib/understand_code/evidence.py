@@ -5,7 +5,7 @@ from .ontology import digest, stable_id
 
 SECRET_NAMES = {".env", ".secrets", "credentials", "credentials.json", "id_rsa", "id_ed25519"}
 EXCLUDED = {".git", ".hg", ".svn", "node_modules", ".venv", "venv", "__pycache__",
-            "vendor", "dist", "build", "coverage", ".next", "graphify-out", ".codebase-memory"}
+            "vendor", "dist", "build", "coverage", ".next", ".codebase-memory"}
 
 
 def safe_path(root: Path, relative: str) -> Path:

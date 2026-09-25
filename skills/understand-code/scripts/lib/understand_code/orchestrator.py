@@ -4,7 +4,7 @@ import json
 import os
 from pathlib import Path
 
-from . import __version__, graphify
+from . import __version__
 from .audit import audit
 from .discovery import inventory
 from .evidence import safe_path, verify as check_evidence
@@ -102,7 +102,7 @@ def baseline(inv: dict) -> list[dict]:
 
 def run(root: Path, output: str, command: str, mode: str = "standard", provider: str = "codex",
         focus: str | None = None, base: str | None = None, finding_paths: list[Path] | None = None,
-        graph_path: str = "graphify-out/graph.json", max_files: int = 2000, max_bytes: int = 5_000_000,
+        max_files: int = 2000, max_bytes: int = 5_000_000,
         change_request: dict | None = None, change_scope: str | None = None,
         ledger_paths: list[Path] | None = None, knowledge_path: Path | None = None, amend_standard: bool = False) -> dict:
     root = root.resolve()
@@ -127,7 +127,6 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
         if command in ("update", "focus", "apply", "import-knowledge") and old is None:
             raise ValueError("No Codebase Spec exists. Run bootstrap first.")
         inv = inventory(root, output, max_files, max_bytes)
-        graph = graphify.load(root, graph_path)
         entities = old["entities"] if old else baseline(inv)
         relations = old["relations"] if old else []
         previous_refs = old["evidence"] if old else []
@@ -147,7 +146,7 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
             # A no-op refresh must not erase incomplete discovery coverage.
             task_plan = old["plan"]
         else:
-            task_plan = plan(inv, graph, mode, focus, impact if command == "update" else None,
+            task_plan = plan(inv, mode, focus, impact if command == "update" else None,
                              entities, relations, previous_refs,
                              coverage.scope_options(change_request) if change_request else None)
             if old:
@@ -222,7 +221,9 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
         for bundle in bundles:
             tasks[bundle["task_id"]]["status"] = "accepted"
             tasks[bundle["task_id"]]["review"] = bundle["review"]
-        schedule_followups(task_plan, [r for b in bundles for r in b.get("followups", [])], inv, graph)
+        for task in task_plan["tasks"]:
+            task.pop("graph_context", None)
+        schedule_followups(task_plan, [r for b in bundles for r in b.get("followups", [])], inv)
         refs = {r["id"]: r for r in previous_refs + inv["evidence"] + [r for b in bundles for r in b["evidence"]]}
         for task in task_plan["tasks"]:
             scoped_refs = {key for key, ref in refs.items() if ref["path"] in task["paths"]}
@@ -245,13 +246,9 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
                 for claim in bundle["entities"] + bundle["relations"]:
                     if claim.get("supersedes") == claim["id"]:
                         gaps.pop(stable_id("knowledge_gap", claim["id"] + "conflict"), None)
-        if graph["status"] == "unavailable":
-            gaps["knowledge_gap.graphify"] = {"id": "knowledge_gap.graphify", "question": "Structural graph unavailable.",
-                                               "next_step": "Use existing MCP graph tools or provide a current Graphify node-link export; verify source before accepting graph hints."}
-        else:
-            gaps.pop("knowledge_gap.graphify", None)
+        gaps.pop("knowledge_gap.graphify", None)
         state = {"inventory": inv, "plan": task_plan, "entities": entities, "relations": relations,
-                 "evidence": list(refs.values()), "gaps": list(gaps.values()), "audit": audit(root, inv), "graph": graph}
+                 "evidence": list(refs.values()), "gaps": list(gaps.values()), "audit": audit(root, inv)}
         state["retired_claims"] = retired
         state["knowledge_imports"] = old.get("knowledge_imports", []) if old else []
         if knowledge_path is not None:
@@ -282,7 +279,8 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
         docs = render(state, output)
         manifest = {"producer": "understand-code", "schema_version": 1, "version": __version__,
                     "commit": inv["commit"], "snapshot": task_plan["snapshot"], "mode": mode, "provider": provider,
-                    "graph_status": graph["status"], "coverage": {"files": len(inv["files"]), "skipped": len(inv["skipped"]),
+                    "code_intelligence": "host-managed according to applicable agent instructions; external retrieval is never evidence",
+                    "coverage": {"files": len(inv["files"]), "skipped": len(inv["skipped"]),
                     "entities": len(entities), "relations": len(relations), "gaps": len(gaps),
                     "pending_tasks": sum(t["status"] != "accepted" for t in task_plan["tasks"]),
                     "deferred_scopes": len(task_plan["deferred"])},
@@ -290,7 +288,7 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
                     "output": output}
         metadata = {"_meta/" + key + ".json": json_text(value) for key, value in
                     (("inventory", inv), ("plan", task_plan), ("gaps", state["gaps"]), ("audit", state["audit"]),
-                     ("impact", impact), ("graphify-semantic", graphify.export(entities, relations)))}
+                     ("impact", impact))}
         metadata.update({"_meta/" + key + ".jsonl": jsonl(state[key]) for key in ("entities", "relations", "evidence")})
         metadata["_meta/change-scopes/index.json"] = json_text(sorted(scopes))
         metadata["_meta/knowledge-imports.json"] = json_text(state["knowledge_imports"])
@@ -300,10 +298,7 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
             metadata[prefix + "scope.json"] = json_text(scope)
             metadata[prefix + "review-template.json"] = json_text(coverage.review_template(scope))
             metadata[prefix + "coverage.json"] = json_text(coverage.assess(scope, state, inv))
-        metadata["_meta/graphify-handoff.json"] = json_text({"input_status": graph["status"], "input_path": graph_path,
-            "input_sha256": graph.get("sha256"), "markdown_root": output,
-            "semantic_export": output + "/_meta/graphify-semantic.json", "refresh": "pending-external",
-            "instructions": "Index current source and Codebase Spec Markdown with your installed Graphify/native graph tooling. No extraction command is launched by this CLI."})
+
         # Archive each supplied response under its content hash. Failed evidence remains external and untouched.
         for bundle in bundles:
             text = json_text(bundle)
@@ -318,5 +313,5 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
         return {"repository": str(root), "output": str(target), "command": command,
                 "change_scope": change_scope,
                 "change_coverage": coverage.assess(scopes[change_scope], state, inv) if change_scope else None,
-                "coverage": manifest["coverage"], "graph_status": graph["status"],
-                "next_step": "Investigate pending native tasks, apply source-reviewed findings, then verify and refresh the graph."}
+                "coverage": manifest["coverage"],
+                "next_step": "Investigate pending native tasks, apply source-reviewed findings, then verify the resulting spec."}

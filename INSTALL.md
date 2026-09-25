@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Python 3.10 or newer; Git for tracked inventories, history, diffs and worktree isolation. No Python runtime dependencies, API keys, service signup or background process are needed. Claude/Codex installation and authentication are managed by those hosts. Graphify or codebase-memory MCP is a companion for structural retrieval; the CLI can consume a preexisting graph export.
+Python 3.10 or newer; Git for tracked inventories, history, diffs and worktree isolation. No Python runtime dependencies, API keys, service signup or background process are needed. Claude/Codex installation and authentication are managed by those hosts. Native investigations use repository-configured code-intelligence tools as optional retrieval aids. The engine has no vendor-specific importer or required index.
 
 ## Codex
 
@@ -96,9 +96,9 @@ No source files are modified in either mode. Existing output must be an owned Co
 
 Modes: quick = up to 6 tasks × 24 paths; standard = 18 × 40; deep = 36 × 60. Scan limits default to 2,000 files and 5 MB of UTF-8 text. `--max-files` and `--max-bytes` adjust them. Skipped/deferred coverage is explicit. Deep mode adds bounded history analysis, not runtime execution.
 
-## Graphify and source updates
+## Code intelligence and source updates
 
-Provide an existing `graphify-out/graph.json` or `--graph <repository-relative-export>`. Use native graph tools to investigate and refresh source plus spec Markdown after accepted findings. See [Graphify contract](skills/understand-code/references/graphify.md); this CLI never invokes a paid extraction pipeline.
+Read applicable repository/ancestor `AGENTS.md`, `CLAUDE.md` and host instructions. Use any installed structural, symbol, semantic-search or code-graph tool configured there. Fall back to bounded source/file search when no tool is configured, available or sufficient. External retrieval results are hints, not source evidence; no external-index refresh is required by this engine.
 
 After source changes:
 

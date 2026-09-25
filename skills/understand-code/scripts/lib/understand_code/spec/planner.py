@@ -1,8 +1,8 @@
 """Adaptive native investigations with independent discovery and durable follow-ups."""
 import json
+from collections import deque
 from pathlib import Path
 
-from ..graphify import context
 from ..ontology import digest, stable_id
 from ..change_scope import resolve
 
@@ -30,23 +30,50 @@ ROLES = {
 MODES = {"quick": (6, 24), "standard": (18, 40), "deep": (36, 60)}
 
 
-def task_for(role: str, selected: list[str], snapshot: str, inventory: dict, graph: dict,
+def task_for(role: str, selected: list[str], snapshot: str, inventory: dict,
              max_paths: int, suffix: str = "") -> dict:
     task_id = stable_id("task", role + snapshot + "|".join(selected) + suffix)
     return {"id": task_id, "role": role, "objective": ROLES[role][1], "snapshot": snapshot,
             "phase": ("synthesis" if role == "feature-synthesizer" else "verification" if role == "relationship-verifier"
                       else "curation" if role == "spec-curator" else "reconnaissance" if role in
                       ("repository-cartographer", "entrypoint-mapper", "domain-discoverer", "instruction-auditor") else "tracing"),
-            "paths": selected, "status": "pending", "graph_context": context(graph, selected),
+            "paths": selected, "status": "pending",
             "candidate_evidence": [c for c in inventory["candidates"] if c["path"] in selected][:120],
             "limits": {"max_paths": max_paths, "max_findings": 500, "execution": "read-only; no repository code execution"},
             "contract": {"schema_version": 1, "task_id": task_id, "snapshot": snapshot,
                          "entities": [], "relations": [], "evidence": [], "gaps": [], "followups": [],
                          "review": {"status": "unreviewed"}},
-            "completion": "Return source-bound findings or explicit gaps. Request follow-up scope when paths are insufficient. Prompt examples never define exhaustive scope. Never fill unknown links with plausible claims."}
+            "completion": "Return source-bound findings or explicit gaps. Use repository-configured code-intelligence tools only as retrieval aids when applicable instructions describe them. Request follow-up scope when paths are insufficient. Prompt examples never define exhaustive scope. Never fill unknown links with plausible claims."}
 
 
-def plan(inventory: dict, graph: dict, mode: str, focus: str | None = None,
+def balanced_paths(paths: list[str]) -> list[str]:
+    """Round-robin directory branches before slicing a bounded task.
+
+    A large early-sorting package must not consume every reconnaissance slot.
+    This is inventory scheduling, not a claim about semantic package boundaries.
+    """
+    tree = {"files": [], "children": {}}
+    for path in sorted(set(paths)):
+        node = tree
+        for part in Path(path).parts[:-1]:
+            node = node["children"].setdefault(part, {"files": [], "children": {}})
+        node["files"].append(path)
+
+    def walk(node):
+        queue = deque([iter(node["files"])] if node["files"] else [])
+        queue.extend(walk(node["children"][key]) for key in sorted(node["children"]))
+        while queue:
+            current = queue.popleft()
+            try:
+                yield next(current)
+            except StopIteration:
+                continue
+            queue.append(current)
+
+    return list(walk(tree))
+
+
+def plan(inventory: dict, mode: str, focus: str | None = None,
          impact: dict | None = None, entities: list[dict] | None = None,
          relations: list[dict] | None = None, evidence: list[dict] | None = None,
          scope_options: dict | None = None) -> dict:
@@ -87,6 +114,7 @@ def plan(inventory: dict, graph: dict, mode: str, focus: str | None = None,
             selected = [p for p in paths if inventory["files"][p]["manifest"] or ".github/" in p or "deploy" in p.lower()]
         if not selected:
             continue
+        selected = balanced_paths(selected)
         selected_set = set(selected)
         parents = {str(Path(s).parent) for s in selected}
         adjacent = [p for p in paths if p not in selected_set and str(Path(p).parent) in parents]
@@ -95,7 +123,7 @@ def plan(inventory: dict, graph: dict, mode: str, focus: str | None = None,
             queue.append((offset, role, selected[offset:offset + max_paths]))
     queue.sort(key=lambda item: (item[0], roles.index(item[1])))
     for _, role, selected in queue:
-        task = task_for(role, selected, snapshot, inventory, graph, max_paths)
+        task = task_for(role, selected, snapshot, inventory, max_paths)
         if len(tasks) < max_tasks:
             tasks.append(task)
         else:
@@ -107,7 +135,7 @@ def plan(inventory: dict, graph: dict, mode: str, focus: str | None = None,
     return result
 
 
-def schedule_followups(task_plan: dict, requests: list[dict], inventory: dict, graph: dict) -> None:
+def schedule_followups(task_plan: dict, requests: list[dict], inventory: dict) -> None:
     known = {r["id"]: r for r in task_plan.setdefault("followups", [])}
     for request in requests:
         previous = known.get(request["id"])
@@ -121,7 +149,7 @@ def schedule_followups(task_plan: dict, requests: list[dict], inventory: dict, g
         available = [p for p in request["paths"] if p in inventory["files"]]
         for offset in range(0, len(available), size):
             task = task_for(request["role"], available[offset:offset + size], task_plan["snapshot"], inventory,
-                            graph, size, request["id"] + request["question"])
+                            size, request["id"] + request["question"])
             task["objective"] += " Follow-up: " + request["question"]
             children.append(task["id"])
             if task["id"] not in current and len(task_plan["tasks"]) < task_plan["max_tasks"]:
