@@ -1,2 +1,6 @@
-export const maxUploadSize = 10 * 1024 * 1024;
-export function acceptsUpload(bytes: number) { return bytes <= maxUploadSize; }
+export type UploadPolicy = { maxUploadSize: number };
+
+// The caller passes the API's serialized upload_policy() payload.
+export function acceptsUpload(bytes: number, policy: UploadPolicy) {
+    return bytes <= policy.maxUploadSize;
+}
