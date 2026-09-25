@@ -88,6 +88,19 @@ External tool results are retrieval hints. Regex matches are candidates. Test so
 
 This release does not execute runtime traces or run autonomous paid headless agents. Native sessions provide reasoning and optional repository-configured retrieval; no external index refresh is owned by the engine. These boundaries and the [v1 acceptance map](docs/ACCEPTANCE.md) distinguish implemented capabilities from future extensions.
 
+## Change completeness, separately from investigation completeness
+
+Create a source-bound `scope` before an application-wide change, investigate its independent surface roster, and account for every baseline/target occurrence through a reviewed ledger. Primary surfaces remain inspection obligations even when a shared component fixes them without a direct edit.
+
+```bash
+understand-code scope "avatar presentation" --repo . --intent ui_standardization --criteria /tmp/standard.json
+understand-code scope --repo . --change-scope <scope-id> --mode deep
+understand-code apply --repo . --change-scope <scope-id> --ledger /tmp/change-review.json
+understand-code verify --repo . --change-scope <scope-id> --require-change-complete
+```
+
+Missing criteria, unresolved discovery, unaccounted occurrences and required-but-missing external checks block the new gate. Existing `verify --require-complete` retains its investigation-only meaning. The engine still does not edit the application or execute its tests. See [the change-coverage workflow and wire contract](docs/CHANGE_COVERAGE.md) for native findings, dispositions, five coverage axes, migration, safe exchange and limitations.
+
 ## Develop
 
 ```bash

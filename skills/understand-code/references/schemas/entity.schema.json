@@ -35,7 +35,9 @@
         "test_behavior",
         "decision",
         "constraint",
-        "knowledge_gap"
+        "knowledge_gap",
+        "concept",
+        "occurrence"
       ]
     },
     "title": {
@@ -84,6 +86,172 @@
         "minLength": 1,
         "maxLength": 12000
       }
+    },
+    "search_terms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      },
+      "maxItems": 32,
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "code_references": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://github.com/bpstr/understand-code/schemas/code-reference.schema.json",
+        "title": "code-reference",
+        "type": "object",
+        "properties": {
+          "repository": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "anchor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "symbol": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "producer_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "repository",
+          "path",
+          "anchor",
+          "sha256",
+          "start_line",
+          "end_line"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100,
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "occurrence": {
+      "type": "object",
+      "properties": {
+        "concept": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+        },
+        "surface": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+        },
+        "anchor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "maxItems": 32,
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "implementation": {
+          "type": "array",
+          "items": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://github.com/bpstr/understand-code/schemas/code-reference.schema.json",
+            "title": "code-reference",
+            "type": "object",
+            "properties": {
+              "repository": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "anchor": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "start_line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "end_line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "producer_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": [
+              "repository",
+              "path",
+              "anchor",
+              "sha256",
+              "start_line",
+              "end_line"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "concept",
+        "surface",
+        "anchor",
+        "conditions",
+        "implementation"
+      ],
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

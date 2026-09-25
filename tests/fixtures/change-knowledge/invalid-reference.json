@@ -1,0 +1,394 @@
+{
+  "contract": "change-knowledge",
+  "version": 1,
+  "producer": {
+    "id": "understand-code",
+    "version": "1.0.0"
+  },
+  "repositories": [
+    {
+      "id": "repository.local",
+      "manifest": {
+        "id": "ba41dc4554ea81b18993add7e4b752317091061365d631deb26c3123e9751922",
+        "commit": "uncommitted",
+        "files": {
+          "components/Frame.tsx": "15c9b0b1f5e21922c9e539ff37c45a5fb86c616e3a924a4a9e47e10b7f2acd90",
+          "components/Portrait.tsx": "1b6ab04e91707f9f7f2e644e919c73ccfb2de5a76aef85a1e09b215ceefe48f1",
+          "components/index.ts": "b81c60d1913cb0a3249461263e17c72efe5a0096b32a26f2a76784e8164b547e",
+          "pages/Activity.tsx": "e995da8ffa58789c2ec875599a1b90c3af1f431c9d3f3e90dc9a033db3180473",
+          "pages/Billing.tsx": "3d165c02cbd595533e82e8a138a247e7faa0e6c37001eb80e1a71546a0d0d667",
+          "pages/Home.tsx": "80c260e3de9cec6473a72bc96a2ef73118b3c4fefd292c1383db2056c181fc1d",
+          "pages/Inbox.tsx": "13075889fddfb8881fadc4e7d373c9929481b054eff4969f52724b3e56d19dec",
+          "pages/People.tsx": "9543252b08dd704f5f37f53810162027b8c1d74141da211211aff0848aeb99fb",
+          "pages/Profile.tsx": "5729b686ffe7dac86549eef85c17f82d5bd0153e7d36b07c38245c68d06fe1e4",
+          "pages/Project.tsx": "0322c3772b6c7b250b25b905e9947659149a419accce980d355ada2a8e8231f0",
+          "pages/Settings.tsx": "b08758ecd744b38f82b60fe46116c2318f1aca1a44f6fb2b2f31d7f4c6132544",
+          "pages/Team.tsx": "50c11c7e6eeb5bc2a10fb19b5f8d1d8c02a6a539559dbba8e514de0a1a990153",
+          "routes.tsx": "fb3d4f0569d3b564cea78df37459ab5649c993f7750039f8003d769ca7fe8d2f"
+        },
+        "deleted": [],
+        "ignored": [],
+        "limitations": [],
+        "policy": "surface-roster-v1",
+        "index_generations": []
+      }
+    }
+  ],
+  "capabilities": [
+    "source-qualified-references-v1",
+    "snapshot-manifests-v1",
+    "reviewed-semantic-findings-v1",
+    "independent-surface-candidates-v1",
+    "candidate-only-import-v1"
+  ],
+  "entities": [
+    {
+      "id": "concept.avatar",
+      "kind": "concept",
+      "title": "Avatar presentation",
+      "summary": "Prepared fixture: concept.avatar",
+      "confidence": "EXTRACTED",
+      "evidence": [
+        "evidence.components-portrait-tsx-1-1-1b6ab04e91707f9f7f2e644e919c73ccfb2de5a76aef-344fa4bd"
+      ],
+      "review": {
+        "status": "source-reviewed",
+        "reviewer": "prepared-fixture-reviewer",
+        "method": "Prepared source inspection; no target application execution"
+      },
+      "search_terms": [
+        "profile photo",
+        "avatar"
+      ]
+    },
+    {
+      "id": "component.portrait",
+      "kind": "component",
+      "title": "component.portrait",
+      "summary": "Prepared fixture: component.portrait",
+      "confidence": "EXTRACTED",
+      "evidence": [
+        "evidence.components-portrait-tsx-1-1-1b6ab04e91707f9f7f2e644e919c73ccfb2de5a76aef-344fa4bd"
+      ],
+      "review": {
+        "status": "source-reviewed",
+        "reviewer": "prepared-fixture-reviewer",
+        "method": "Prepared source inspection; no target application execution"
+      }
+    },
+    {
+      "id": "component.frame",
+      "kind": "component",
+      "title": "component.frame",
+      "summary": "Prepared fixture: component.frame",
+      "confidence": "EXTRACTED",
+      "evidence": [
+        "evidence.components-frame-tsx-1-2-15c9b0b1f5e21922c9e539ff37c45a5fb86c616e3a924a4-3f544910",
+        "evidence.components-index-ts-1-1-b81c60d1913cb0a3249461263e17c72efe5a0096b32a26f2-19c48869"
+      ],
+      "review": {
+        "status": "source-reviewed",
+        "reviewer": "prepared-fixture-reviewer",
+        "method": "Prepared source inspection; no target application execution"
+      }
+    },
+    {
+      "id": "ui_surface.profile",
+      "kind": "ui_surface",
+      "title": "ui_surface.profile",
+      "summary": "Prepared fixture: ui_surface.profile",
+      "confidence": "EXTRACTED",
+      "evidence": [
+        "evidence.pages-profile-tsx-1-2-5729b686ffe7dac86549eef85c17f82d5bd0153e7d36b07c38-12730d45"
+      ],
+      "review": {
+        "status": "source-reviewed",
+        "reviewer": "prepared-fixture-reviewer",
+        "method": "Prepared source inspection; no target application execution"
+      }
+    }
+  ],
+  "occurrences": [
+    {
+      "id": "occurrence.profile",
+      "kind": "occurrence",
+      "title": "occurrence.profile",
+      "summary": "Prepared fixture: occurrence.profile",
+      "confidence": "EXTRACTED",
+      "evidence": [
+        "evidence.pages-profile-tsx-1-2-5729b686ffe7dac86549eef85c17f82d5bd0153e7d36b07c38-12730d45",
+        "evidence.components-portrait-tsx-1-1-1b6ab04e91707f9f7f2e644e919c73ccfb2de5a76aef-344fa4bd"
+      ],
+      "review": {
+        "status": "source-reviewed",
+        "reviewer": "prepared-fixture-reviewer",
+        "method": "Prepared source inspection; no target application execution"
+      },
+      "occurrence": {
+        "concept": "concept.avatar",
+        "surface": "ui_surface.profile",
+        "anchor": "Profile/portrait/1",
+        "conditions": [
+          "default"
+        ],
+        "implementation": [
+          {
+            "repository": "repository.local",
+            "path": "pages/Profile.tsx",
+            "anchor": "Profile/portrait/1",
+            "sha256": "5729b686ffe7dac86549eef85c17f82d5bd0153e7d36b07c38245c68d06fe1e4",
+            "start_line": 1,
+            "end_line": 2
+          },
+          {
+            "repository": "repository.local",
+            "path": "components/Portrait.tsx",
+            "anchor": "Portrait/img",
+            "sha256": "1b6ab04e91707f9f7f2e644e919c73ccfb2de5a76aef85a1e09b215ceefe48f1",
+            "start_line": 1,
+            "end_line": 1
+          }
+        ]
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation.frame-picture",
+      "kind": "renders",
+      "source": "component.missing",
+      "target": "component.portrait",
+      "confidence": "EXTRACTED",
+      "evidence": [
+        "evidence.components-frame-tsx-1-2-15c9b0b1f5e21922c9e539ff37c45a5fb86c616e3a924a4-3f544910"
+      ],
+      "review": {
+        "status": "source-reviewed",
+        "reviewer": "prepared-fixture-reviewer",
+        "method": "Prepared source inspection; no target application execution"
+      }
+    },
+    {
+      "id": "relation.profile-presents",
+      "kind": "presents",
+      "source": "ui_surface.profile",
+      "target": "concept.avatar",
+      "confidence": "EXTRACTED",
+      "evidence": [
+        "evidence.pages-profile-tsx-1-2-5729b686ffe7dac86549eef85c17f82d5bd0153e7d36b07c38-12730d45"
+      ],
+      "review": {
+        "status": "source-reviewed",
+        "reviewer": "prepared-fixture-reviewer",
+        "method": "Prepared source inspection; no target application execution"
+      }
+    },
+    {
+      "id": "relation.profile-renders",
+      "kind": "renders",
+      "source": "ui_surface.profile",
+      "target": "component.frame",
+      "confidence": "EXTRACTED",
+      "evidence": [
+        "evidence.pages-profile-tsx-1-2-5729b686ffe7dac86549eef85c17f82d5bd0153e7d36b07c38-12730d45"
+      ],
+      "review": {
+        "status": "source-reviewed",
+        "reviewer": "prepared-fixture-reviewer",
+        "method": "Prepared source inspection; no target application execution"
+      }
+    },
+    {
+      "id": "relation.profile-occurs",
+      "kind": "occurs_on",
+      "source": "occurrence.profile",
+      "target": "ui_surface.profile",
+      "confidence": "EXTRACTED",
+      "evidence": [
+        "evidence.pages-profile-tsx-1-2-5729b686ffe7dac86549eef85c17f82d5bd0153e7d36b07c38-12730d45"
+      ],
+      "review": {
+        "status": "source-reviewed",
+        "reviewer": "prepared-fixture-reviewer",
+        "method": "Prepared source inspection; no target application execution"
+      }
+    },
+    {
+      "id": "relation.profile-realizes",
+      "kind": "realizes",
+      "source": "occurrence.profile",
+      "target": "concept.avatar",
+      "confidence": "EXTRACTED",
+      "evidence": [
+        "evidence.pages-profile-tsx-1-2-5729b686ffe7dac86549eef85c17f82d5bd0153e7d36b07c38-12730d45"
+      ],
+      "review": {
+        "status": "source-reviewed",
+        "reviewer": "prepared-fixture-reviewer",
+        "method": "Prepared source inspection; no target application execution"
+      }
+    },
+    {
+      "id": "relation.primary-profile",
+      "kind": "primary_surface",
+      "source": "concept.avatar",
+      "target": "ui_surface.profile",
+      "confidence": "EXTRACTED",
+      "evidence": [
+        "evidence.pages-profile-tsx-1-2-5729b686ffe7dac86549eef85c17f82d5bd0153e7d36b07c38-12730d45"
+      ],
+      "review": {
+        "status": "source-reviewed",
+        "reviewer": "prepared-fixture-reviewer",
+        "method": "Prepared source inspection; no target application execution"
+      },
+      "scope": "Personal profile; default role"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence.components-frame-tsx-1-2-15c9b0b1f5e21922c9e539ff37c45a5fb86c616e3a924a4-3f544910",
+      "path": "components/Frame.tsx",
+      "start_line": 1,
+      "end_line": 2,
+      "sha256": "15c9b0b1f5e21922c9e539ff37c45a5fb86c616e3a924a4a9e47e10b7f2acd90",
+      "excerpt_sha256": "8c242182ef3bca5d77cc2ed1010cd1f2d1eb7ac3bc2977ec4ac05ead3a52d419",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.components-portrait-tsx-1-1-1b6ab04e91707f9f7f2e644e919c73ccfb2de5a76aef-344fa4bd",
+      "path": "components/Portrait.tsx",
+      "start_line": 1,
+      "end_line": 1,
+      "sha256": "1b6ab04e91707f9f7f2e644e919c73ccfb2de5a76aef85a1e09b215ceefe48f1",
+      "excerpt_sha256": "6af6b7899d894ae32b939319e3333e45aeb3699867da6bc214c3324e21c1b637",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.components-index-ts-1-1-b81c60d1913cb0a3249461263e17c72efe5a0096b32a26f2-19c48869",
+      "path": "components/index.ts",
+      "start_line": 1,
+      "end_line": 1,
+      "sha256": "b81c60d1913cb0a3249461263e17c72efe5a0096b32a26f2a76784e8164b547e",
+      "excerpt_sha256": "cb301fbaaae6977dc34996e0067a8f727da0aac8ed5227f03bf87b92258bf76d",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.pages-activity-tsx-1-1-e995da8ffa58789c2ec875599a1b90c3af1f431c9d3f3e90d-997abda3",
+      "path": "pages/Activity.tsx",
+      "start_line": 1,
+      "end_line": 1,
+      "sha256": "e995da8ffa58789c2ec875599a1b90c3af1f431c9d3f3e90dc9a033db3180473",
+      "excerpt_sha256": "70a373e45595f81e408d101753aab5efae3a2a6bb4ae75112a35c4b4323702ff",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.pages-billing-tsx-1-2-3d165c02cbd595533e82e8a138a247e7faa0e6c37001eb80e1-e4e287f5",
+      "path": "pages/Billing.tsx",
+      "start_line": 1,
+      "end_line": 2,
+      "sha256": "3d165c02cbd595533e82e8a138a247e7faa0e6c37001eb80e1a71546a0d0d667",
+      "excerpt_sha256": "522edb57d56065f118e7ed07c24d501b5228afd5a753958cd4eb411fedbaf91f",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.pages-home-tsx-1-2-80c260e3de9cec6473a72bc96a2ef73118b3c4fefd292c1383db2-8ef59516",
+      "path": "pages/Home.tsx",
+      "start_line": 1,
+      "end_line": 2,
+      "sha256": "80c260e3de9cec6473a72bc96a2ef73118b3c4fefd292c1383db2056c181fc1d",
+      "excerpt_sha256": "07cdbb829397046a38a41907d0589b8b08e549fbd06be14aec0ed39bfd37970b",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.pages-inbox-tsx-1-2-13075889fddfb8881fadc4e7d373c9929481b054eff4969f5272-7e529b10",
+      "path": "pages/Inbox.tsx",
+      "start_line": 1,
+      "end_line": 2,
+      "sha256": "13075889fddfb8881fadc4e7d373c9929481b054eff4969f52724b3e56d19dec",
+      "excerpt_sha256": "48283200b9332a36ac05456777a1d39a050b426d474501ddabe35596a49c2cfc",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.pages-people-tsx-1-2-9543252b08dd704f5f37f53810162027b8c1d74141da211211a-deae7ea3",
+      "path": "pages/People.tsx",
+      "start_line": 1,
+      "end_line": 2,
+      "sha256": "9543252b08dd704f5f37f53810162027b8c1d74141da211211aff0848aeb99fb",
+      "excerpt_sha256": "475edca0365142013c7e34d18f359aa8a445b4c748b4059a333044e8745c7868",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.pages-profile-tsx-1-2-5729b686ffe7dac86549eef85c17f82d5bd0153e7d36b07c38-12730d45",
+      "path": "pages/Profile.tsx",
+      "start_line": 1,
+      "end_line": 2,
+      "sha256": "5729b686ffe7dac86549eef85c17f82d5bd0153e7d36b07c38245c68d06fe1e4",
+      "excerpt_sha256": "58cc4fa5a1b991711f110f7d04fffe9ebdce42fbffd30f3c2abfa0d8606c987c",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.pages-project-tsx-1-2-0322c3772b6c7b250b25b905e9947659149a419accce980d35-76d3054c",
+      "path": "pages/Project.tsx",
+      "start_line": 1,
+      "end_line": 2,
+      "sha256": "0322c3772b6c7b250b25b905e9947659149a419accce980d355ada2a8e8231f0",
+      "excerpt_sha256": "eee95b87c6b7953307ce727fc911dba31f3e15ad8c23dd3235f6d6f1afb10a0c",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.pages-settings-tsx-1-2-b08758ecd744b38f82b60fe46116c2318f1aca1a44f6fb2b2-ed4c794d",
+      "path": "pages/Settings.tsx",
+      "start_line": 1,
+      "end_line": 2,
+      "sha256": "b08758ecd744b38f82b60fe46116c2318f1aca1a44f6fb2b2f31d7f4c6132544",
+      "excerpt_sha256": "a6d1eb291ab910031ffb9ebd0efb6398c66f231afe755f1ab2dbf687f916b8fb",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.pages-team-tsx-1-2-50c11c7e6eeb5bc2a10fb19b5f8d1d8c02a6a539559dbba8e514d-c081f061",
+      "path": "pages/Team.tsx",
+      "start_line": 1,
+      "end_line": 2,
+      "sha256": "50c11c7e6eeb5bc2a10fb19b5f8d1d8c02a6a539559dbba8e514de0a1a990153",
+      "excerpt_sha256": "a551aeb86ba3eba870417f3bd0aa40800f8b3b0da199c75bd9b1432d908f4361",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    },
+    {
+      "id": "evidence.routes-tsx-1-2-fb3d4f0569d3b564cea78df37459ab5649c993f7750039f8003d769ca-da5363f9",
+      "path": "routes.tsx",
+      "start_line": 1,
+      "end_line": 2,
+      "sha256": "fb3d4f0569d3b564cea78df37459ab5649c993f7750039f8003d769ca7fe8d2f",
+      "excerpt_sha256": "b94be7e102159e3cbe9ad85db29d6ab12d80b78b8b9be5aa60bc5dd3630363f8",
+      "commit": "uncommitted",
+      "kind": "source",
+      "repository": "repository.local"
+    }
+  ],
+  "gaps": []
+}

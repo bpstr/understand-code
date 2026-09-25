@@ -24,7 +24,7 @@ PATTERNS = {
     "entrypoint": r"(?:@\w+\.(?:get|post|put|patch|delete|route)\(|\b(?:app|router)\.(?:get|post|put|patch|delete)\(|\b(?:webhook|urlpatterns|APIRouter|createServer)\b|__name__\s*==)",
     "setting": r"(?:\b(?:getenv|environ|process\.env|featureFlag|feature_flag|settings|config)\b)",
     "data_entity": r"(?:\b(?:CREATE TABLE|class \w+\([^)]*Model|model \w+\s*\{|schema|migration)\b)",
-    "ui_surface": r"(?:\b(?:function [A-Z]\w*|useState|useStore|<template|<form|createRouter)\b)",
+    "ui_surface": r"(?:\b(?:function [A-Z]\w*|(?:const|let) [A-Z]\w*|useState|useStore|createRouter|createBrowserRouter)\b|<(?:template|form|Route)\b|\b(?:path|element|Component)\s*:)",
     "event": r"(?:\b(?:emit|publish|subscribe|enqueue|consumer|dispatch|queue)\s*\()",
     "permission": r"(?:\b(?:permission|authorize|isAdmin|hasRole|requireAuth|check_access)\b)",
     "external_system": r"(?:\b(?:fetch|requests\.(?:get|post)|axios|https?://|stripe|boto3)\b)",
@@ -46,17 +46,24 @@ def inventory(root: Path, output: str, max_files: int = 2000, max_bytes: int = 5
     if ignore_file.is_file() and not ignore_file.is_symlink():
         ignores = [s.strip() for s in ignore_file.read_text().splitlines() if s.strip() and not s.startswith("#")]
     records, skipped, refs, candidates = {}, [], {}, []
+    ignored, deleted, limitations = [], [], []
     languages = Counter()
     commit = head(root)
     total = 0
     for path in sorted(names):
-        if evidence.excluded(path, output) or any(fnmatch.fnmatch(path, pat) for pat in ignores):
+        if evidence.excluded(path, output):
+            continue
+        if any(fnmatch.fnmatch(path, pat) for pat in ignores):
+            ignored.append({"path": path, "reason": "repository ignore rule"})
             continue
         if len(records) >= max_files:
             skipped.append({"path": path, "reason": "file budget"})
             continue
         try:
             text = evidence.read_source(root, path)
+        except FileNotFoundError:
+            deleted.append(path)
+            continue
         except (OSError, ValueError, UnicodeError) as error:
             skipped.append({"path": path, "reason": type(error).__name__})
             continue
@@ -89,6 +96,17 @@ def inventory(root: Path, output: str, max_files: int = 2000, max_bytes: int = 5
                     refs[ref["id"]] = ref
                     candidates.append({"kind": category, "path": path, "line": line_number,
                                        "evidence": ref["id"], "confidence": "INFERRED"})
+        if p.suffix in (".js", ".jsx", ".ts", ".tsx", ".vue", ".svelte"):
+            # Routing hints only: native inspection must resolve wrappers and bindings.
+            for number, line in enumerate(text.splitlines(), 1):
+                for match in re.finditer(r"<[A-Z][\w.]*\b|\b(?:import|export)\s+[^;]+\bfrom\s*['\"]", line):
+                    ref = evidence.capture(path, text, number, number, commit, kind)
+                    refs[ref["id"]] = ref
+                    candidates.append({"kind": "composition", "path": path, "line": number,
+                                       "column": match.start() + 1, "name": match.group(),
+                                       "evidence": ref["id"], "confidence": "INFERRED"})
+                if re.search(r"\bimport\s*\(|\b(?:React\.)?createElement\s*\(|\b(?:eval|new Function)\s*\(", line):
+                    limitations.append({"path": path, "reason": f"dynamic binding at line {number}; static roster cannot resolve it"})
         if p.suffix == ".py":
             try:
                 tree = ast.parse(text)
@@ -102,4 +120,6 @@ def inventory(root: Path, output: str, max_files: int = 2000, max_bytes: int = 5
                 skipped.append({"path": path, "reason": "Python syntax extraction unavailable; text retained"})
     return {"commit": commit, "files": records, "languages": dict(languages), "candidates": candidates,
             "evidence": list(refs.values()), "skipped": skipped, "bytes_read": total,
+            "ignored": ignored, "deleted": deleted, "limitations": limitations,
+            "discovery_policy": "surface-roster-v1",
             "limits": {"max_files": max_files, "max_bytes": max_bytes}}

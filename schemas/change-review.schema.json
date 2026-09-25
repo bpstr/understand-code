@@ -1,0 +1,379 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bpstr/understand-code/schemas/change-review.schema.json",
+  "title": "change-review",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "change_scope": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+    },
+    "baseline_snapshot": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "target_snapshot": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "unreviewed",
+            "source-reviewed"
+          ]
+        },
+        "reviewer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 12000
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 12000
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://github.com/bpstr/understand-code/schemas/evidence.schema.json",
+        "title": "evidence",
+        "type": "object",
+        "required": [
+          "id",
+          "path",
+          "start_line",
+          "end_line",
+          "sha256",
+          "excerpt_sha256",
+          "commit",
+          "kind"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "excerpt_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "commit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "kind": {
+            "enum": [
+              "source",
+              "test",
+              "config",
+              "documentation",
+              "human"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "maxItems": 500,
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "dispositions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "obligation": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "disposition": {
+            "enum": [
+              "changed_directly",
+              "changed_via_shared_dependency",
+              "already_compliant",
+              "excluded",
+              "removed",
+              "unresolved"
+            ]
+          },
+          "criteria": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            },
+            "maxItems": 100,
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            },
+            "maxItems": 500,
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "consumer_evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            },
+            "maxItems": 500,
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "dependency_evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            },
+            "maxItems": 500,
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "exclusion": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "intentional": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "obligation",
+          "disposition",
+          "criteria",
+          "evidence",
+          "rationale"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 1000,
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "candidate": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "status": {
+            "enum": [
+              "modeled",
+              "not_relevant",
+              "removed",
+              "unresolved"
+            ]
+          },
+          "occurrences": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            },
+            "maxItems": 500,
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            },
+            "maxItems": 500,
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "intentional": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "candidate",
+          "status",
+          "occurrences",
+          "evidence",
+          "rationale"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 2000,
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "policies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      },
+      "maxItems": 32,
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "executions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "command": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "exit_code": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "runner": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "executed_at": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "output_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "source_snapshot": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "id",
+          "command",
+          "exit_code",
+          "runner",
+          "executed_at",
+          "output_sha256",
+          "source_snapshot"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100,
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "identity_mappings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "baseline": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "target": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "baseline",
+          "target",
+          "rationale",
+          "evidence"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 500,
+      "minItems": 0,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "change_scope",
+    "baseline_snapshot",
+    "target_snapshot",
+    "revision",
+    "review",
+    "evidence",
+    "dispositions",
+    "candidates",
+    "policies",
+    "executions"
+  ],
+  "additionalProperties": false
+}

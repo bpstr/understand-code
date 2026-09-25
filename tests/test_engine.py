@@ -210,8 +210,9 @@ class EngineTests(unittest.TestCase):
         self.bootstrap()
         run(self.root, OUT, "focus", focus="checkout")
         self.assertTrue(self.state()["plan"]["deferred"])
-        with self.assertRaisesRegex(ValueError, "did not resolve"):
-            run(self.root, OUT, "focus", focus="nonexistenttopic")
+        run(self.root, OUT, "focus", focus="nonexistenttopic")
+        self.assertTrue(self.state()["plan"]["tasks"])
+        self.assertIn("concept-resolution", [g["id"] for g in self.state()["plan"]["scope_resolution"]["frontier"]])
 
     def test_conflicts_become_unknown_with_preserved_alternatives(self):
         self.bootstrap()

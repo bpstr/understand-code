@@ -32,6 +32,11 @@ Hash checks prove identity and freshness, not semantic entailment. `source-revie
 
 Output is staged beside the destination and swapped with rollback on ordinary failures. This is process-level transactional replacement, not a crash-proof database transaction. A hard kill can require backup recovery; see [maintenance](../skills/understand-code/references/maintenance.md). The target source tree is not changed and the engine never commits or pushes it.
 
+## Semantic change coverage
+
+`change_scope.py` provides an independent source roster and typed relevance traversal; it does not replace conservative `impact.py` invalidation. `coverage.py` maintains source-bound baseline/target inventories, retained occurrence and anchor obligations, reviewed dispositions, identity mappings and five separate coverage axes. `exchange.py` supplies a bounded offline wire adapter with candidate-only imports and source-mismatch quarantine.
+
+The orchestrator loads hashed optional scope/import/retirement metadata, validates findings and ledger packets before publication, preserves review/discovery histories, and writes through the existing transactional spec writer. Native roles interpret source; the coding harness alone edits applications and executes authorized behavioral checks. See [change coverage](CHANGE_COVERAGE.md) for the completion contract and compatibility boundaries.
 ## Retrieval boundary
 
 The engine does not import vendor graphs, expose vendor-specific CLI flags, or require external index refresh. Native sessions select configured tools using applicable repository/ancestor instructions. Results narrow retrieval; accepted claims still require exact current-source evidence. Historical files from older versions are not promoted into the current model.

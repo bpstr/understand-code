@@ -47,7 +47,13 @@
         "invalidates",
         "propagates_to",
         "constrained_by",
-        "configured_by"
+        "configured_by",
+        "has_aspect",
+        "primary_surface",
+        "presents",
+        "renders",
+        "occurs_on",
+        "realizes"
       ]
     },
     "confidence": {
@@ -71,6 +77,11 @@
     "supersedes": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
     }
   },
   "additionalProperties": false

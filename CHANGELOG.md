@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add evidence-backed concepts, phrase vocabulary, source-qualified occurrences and typed surface/composition relationships.
+- Add independent semantic scopes, durable follow-ups, baseline/target obligation ledgers, explicit retirement/identity reconciliation and a separate strict change-completeness gate.
+- Add five coverage axes, generated occurrence/change/source maps, external check provenance and conservative stale-review invalidation.
+- Add standalone Change Knowledge Exchange v1 with a pinned closed schema, prepared fixtures and candidate-only/quarantined imports.
+- Preserve legacy investigation verification and conservative impact invalidation. Unknown focus now returns an explicit discovery gap and bounded plan.
 - Remove vendor-specific code-intelligence coupling from the engine and CLI.
 - Let applicable repository/host agent instructions select any installed code-intelligence retrieval tool.
 - Keep external retrieval results explicitly unverified until checked against current source evidence.

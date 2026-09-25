@@ -21,11 +21,12 @@ def check(value, schema: dict, location: str = "finding") -> None:
             raise ValueError(f"{location}: string length outside contract")
         if "pattern" in schema and not re.search(schema["pattern"], value):
             raise ValueError(f"{location}: invalid string format")
-    if type(value) is int and value < schema.get("minimum", value):
-        raise ValueError(f"{location}: below minimum")
+    if type(value) is int:
+        if value < schema.get("minimum", value) or value > schema.get("maximum", value):
+            raise ValueError(f"{location}: integer outside contract")
     if isinstance(value, list):
-        if len(value) > schema.get("maxItems", 10**9):
-            raise ValueError(f"{location}: too many items")
+        if len(value) < schema.get("minItems", 0) or len(value) > schema.get("maxItems", 10**9):
+            raise ValueError(f"{location}: array length outside contract")
         if schema.get("uniqueItems") and len({json.dumps(x, sort_keys=True) for x in value}) != len(value):
             raise ValueError(f"{location}: duplicate items")
         for i, item in enumerate(value):
@@ -45,6 +46,12 @@ def check(value, schema: dict, location: str = "finding") -> None:
                 check(item, additional, f"{location}.{key}")
 
 
+def validate_contract(name: str, value) -> None:
+    if not re.fullmatch(r"[a-z-]+", name):
+        raise ValueError("Invalid contract name")
+    schema = json.loads(files("understand_code").joinpath(f"resources/{name}.schema.json").read_text())
+    check(value, schema, name)
+
+
 def validate_finding(value) -> None:
-    schema = json.loads(files("understand_code").joinpath("resources/finding.schema.json").read_text())
-    check(value, schema)
+    validate_contract("finding", value)
