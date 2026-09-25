@@ -50,6 +50,7 @@ def source_link(page_path: str, output: str, ref: dict) -> str:
 def entity_path(entity: dict) -> str:
     folders = {"feature": "features", "flow": "flows", "setting": "settings", "feature_flag": "settings",
                "entrypoint": "entrypoints", "ui_surface": "ui", "component": "ui", "data_entity": "data",
+               "concept": "concepts", "occurrence": "occurrences",
                "external_system": "integrations", "permission": "cross-cutting", "event": "flows", "job": "flows"}
     return folders.get(entity["kind"], "architecture") + "/" + entity["id"] + ".md"
 
@@ -81,6 +82,37 @@ def render(state: dict, output: str) -> dict[str, str]:
             body += "\n## Investigation notes (same confidence as this entity)\n\n"
             for label, detail in entity["details"].items():
                 body += f"- **{escape(label)}:** {escape(detail)}\n"
+        if entity.get("search_terms"):
+            body += "\n## Search vocabulary\n\n" + ", ".join(escape(t) for t in entity["search_terms"]) + "\n"
+        occurrences = [e for e in entities.values() if e.get("occurrence", {}).get("concept") == key]
+        if entity["kind"] in ("concept", "feature", "setting"):
+            body += "\n## Occurrence inventory and supported variants\n\n"
+            for occurrence in occurrences:
+                surface = occurrence["occurrence"]["surface"]
+                relative = os.path.relpath(paths[occurrence["id"]], str(Path(path).parent))
+                surface_path = os.path.relpath(paths[surface], str(Path(path).parent))
+                body += (f"- [{escape(occurrence['title'])}]({quote(relative, safe='/')}) on "
+                         f"[{escape(entities[surface]['title'])}]({quote(surface_path, safe='/')}) — "
+                         f"{escape(', '.join(occurrence['occurrence']['conditions']) or 'unconditional static variant')}; "
+                         f"{occurrence['confidence']}; {'stale' if occurrence.get('stale') else 'source-bound'}\n")
+            if not occurrences:
+                body += "No confirmed occurrence inventory yet; this is not evidence of absence.\n"
+            body += "\nPrimary surfaces (`primary_surface`) and canonical implementations (`implemented_by`) are distinct relationships above.\n"
+        if entity.get("occurrence"):
+            occurrence = entity["occurrence"]
+            body += "\n## Stable occurrence anchor\n\n" + escape(occurrence["anchor"]) + "\n\n"
+            for label in ("concept", "surface"):
+                other = occurrence[label]
+                relative = os.path.relpath(paths[other], str(Path(path).parent))
+                body += f"- {label}: [{escape(entities[other]['title'])}]({quote(relative, safe='/')})\n"
+            body += "\nConditions: " + escape(", ".join(occurrence["conditions"]) or "unconditional static variant") + "\n"
+        matching_scopes = [scope for scope in state.get("change_scopes", {}).values()
+                           if key in scope["resolution"]["entities"] or key in scope["resolution"]["required_anchors"]]
+        if matching_scopes:
+            body += "\n## Change checklist\n\n"
+            for scope in matching_scopes:
+                relative = os.path.relpath("changes/" + scope["id"] + ".md", str(Path(path).parent))
+                body += f"- [{escape(scope['request']['topic'])}]({relative}) — preserve and account for every baseline/target obligation.\n"
         docs[path] = page(entity["title"], body, entity)
     index = (f"Reconstructed source commit: `{inv['commit']}`. Snapshot: `{state['plan']['snapshot']}`.\n\n"
              "This is an evidence index and semantic model, not a guarantee of correctness. Verify source before implementation.\n\n"
@@ -88,6 +120,9 @@ def render(state: dict, output: str) -> dict[str, str]:
              "- [Agent readiness](agent/readiness.md)\n- [Instruction map](agent/instruction-map.md)\n"
              "- [Build, test and run](operations/build-test-run.md)\n\n## Concepts\n\n")
     index += "\n".join(f"- [{escape(e['title'])}]({paths[e['id']]}) — {e['kind']}, {e['confidence']}" for e in entities.values()) or "Native investigation pending; no product features have been asserted."
+    if state.get("change_scopes"):
+        index += "\n\n## Change coverage\n\n" + "\n".join(
+            f"- [{escape(scope['request']['topic'])}](changes/{scope['id']}.md)" for scope in state["change_scopes"].values())
     docs["README.md"] = page("Codebase Spec", index)
     docs["overview.md"] = page("Repository overview", f"Scanned {len(inv['files'])} text files ({inv['bytes_read']} bytes).\n\n"
                               + "Languages by file extension: " + escape(json.dumps(inv["languages"]))
@@ -108,6 +143,54 @@ def render(state: dict, output: str) -> dict[str, str]:
     manifests = [p for p, v in inv["files"].items() if v["manifest"]]
     docs["operations/build-test-run.md"] = page("Build, test and run", "Commands are not executed during reconstruction. Read and validate repository instructions before running them.\n\nManifest candidates:\n\n" + "\n".join(f"- `{escape(p)}`" for p in manifests))
     docs["glossary.md"] = page("Glossary", "\n".join(f"- **{escape(e['title'])}** (`{e['id']}`): {escape(e['summary'])} [{e['confidence']}]" for e in entities.values()) or "Concept vocabulary awaits native investigation.")
+    from ..ontology import stable_id
+    for source in inv["files"]:
+        supported = [e for e in entities.values() if any(refs[r]["path"] == source for r in e["evidence"] if r in refs)]
+        relations = [r for r in state["relations"] if any(refs[e]["path"] == source for e in r["evidence"] if e in refs)]
+        if not supported and not relations:
+            continue
+        code_path = "code/" + stable_id("source", source) + ".md"
+        body = "Source-backed associations; source inventory alone does not establish behavior.\n\n"
+        for entity in supported:
+            link = os.path.relpath(paths[entity["id"]], "code")
+            body += f"- [{escape(entity['title'])}]({quote(link, safe='/')}) — {entity['kind']}, {entity['confidence']}\n"
+            # Bidirectional navigation without changing the source file itself.
+            entity_doc = docs[paths[entity["id"]]]
+            backlink = os.path.relpath(code_path, str(Path(paths[entity["id"]]).parent))
+            docs[paths[entity["id"]]] = entity_doc.replace(END, f"\nSource index: [{escape(source)}]({backlink})\n" + END)
+        for relation in relations:
+            body += f"- Relation `{relation['kind']}`: `{relation['source']}` → `{relation['target']}`; {relation['confidence']}\n"
+        docs[code_path] = page(source, body)
+    from ..coverage import assess
+    for scope in state.get("change_scopes", {}).values():
+        report = assess(scope, state, inv)
+        body = (escape(report["summary"]) + f"\n\nBaseline: `{scope['baseline']['id']}`. Target: `{scope['target']['id']}`.\n\n"
+                "## Acceptance standard\n\n")
+        for criterion in scope["request"]["standard"]["criteria"]:
+            body += f"- `{criterion['id']}`: {escape(criterion['description'])} ({criterion['verification']})\n"
+        if not scope["request"]["standard"]["criteria"]:
+            body += "Unresolved requirements: no concrete standard supplied.\n"
+        body += "\n## Coverage axes\n\n"
+        for axis in ("inventory_coverage", "investigation_coverage", "discovery_coverage", "occurrence_accounting", "behavioral_verification"):
+            body += f"- `{axis}`: **{report[axis]['status']}**\n"
+        body += "\n## Occurrences and mandatory inspection anchors\n\n| Obligation | Kind | Surface | Disposition |\n| --- | --- | --- | --- |\n"
+        for key, obligation in scope["obligations"].items():
+            disposition = scope["dispositions"].get(key, {})
+            status = disposition.get("disposition", "unresolved")
+            if disposition and disposition.get("revision") != scope["revision"]:
+                status += " (invalidated)"
+            body += f"| {escape(key)} | {obligation['kind']} | {escape(obligation['surface'])} | {escape(status)} |\n"
+        body += "\n## Independent discovery roster\n\n"
+        for key, candidate in scope["candidates"].items():
+            review = scope["candidate_reviews"].get(key, {})
+            status = review.get("status", "unresolved") if review.get("revision") == scope["revision"] else "unresolved / stale review"
+            body += f"- `{escape(candidate['path'])}` — {escape(status)}\n"
+        body += "\n## Unresolved frontiers\n\n"
+        for item in report["discovery_coverage"]["frontier"]:
+            body += f"- {escape(item['id'])}: {escape(item['reason'])}\n"
+        body += f"\nFull provenance, review history, exclusions and current obligations: `../_meta/change-scopes/{scope['id']}/scope.json`.\n"
+        body += "\nUnderstand Code executed no target-application tests. External execution evidence and static-only acceptance policy are explicit in the coverage report.\n"
+        docs["changes/" + scope["id"] + ".md"] = page(scope["request"]["topic"], body)
     return docs
 
 
@@ -140,7 +223,7 @@ def write(output: Path, docs: dict[str, str], metadata: dict[str, str], manifest
             prior = (output / path).read_text()
             docs[path] = generated(page("Retired concept", "This concept is no longer in the current model. Consult Git history and maintainer notes; do not use it as current evidence.")) + prior[prior.index(END) + len(END):]
     manifest["managed"] = {path: digest(generated(text)) for path, text in docs.items()}
-    manifest["metadata_hashes"] = {path: digest(text) for path, text in metadata.items()}
+    manifest["metadata_hashes"] = {**old.get("metadata_hashes", {}), **{path: digest(text) for path, text in metadata.items()}}
     metadata["_meta/manifest.json"] = json_text(manifest)
     output.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=".understand-code-stage-", dir=output.parent))

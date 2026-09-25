@@ -4,8 +4,8 @@ Mechanical validation establishes citation identity and scope. It cannot prove t
 a natural-language statement follows from an excerpt; an independent review records
 that judgment explicitly and never changes source hashes to make a stale result pass.
 """
-from .evidence import verify
-from .ontology import KINDS, RELATIONS, CONFIDENCES, check_id, stable_id
+from .evidence import verify, safe_path, excluded, read_source, source_hash
+from .ontology import KINDS, RELATIONS, RELATION_ENDPOINTS, CONFIDENCES, check_id, stable_id
 from .contracts import validate_finding
 from .git import head
 
@@ -23,7 +23,7 @@ def validate(bundle: dict, root, output: str, task: dict, known_entities: list[d
     for key in ("entities", "relations", "evidence", "gaps"):
         if not isinstance(bundle[key], list) or len(bundle[key]) > 500:
             raise ValueError(f"{key} must be a bounded array (maximum 500)")
-    if not bundle["entities"] and not bundle["relations"] and not bundle["gaps"]:
+    if not any(bundle.get(k) for k in ("entities", "relations", "gaps", "followups", "resolved_gaps", "retirements")):
         raise ValueError("An empty response is not a completed investigation; record an explicit knowledge gap")
     if not isinstance(bundle["review"], dict) or bundle["review"].get("status") not in ("unreviewed", "source-reviewed"):
         raise ValueError("Review must explicitly be unreviewed or source-reviewed")
@@ -45,7 +45,11 @@ def validate(bundle: dict, root, output: str, task: dict, known_entities: list[d
         if ref["id"] in refs:
             raise ValueError("Duplicate evidence ID")
         refs[ref["id"]] = ref
+    for resolution in bundle.get("resolved_gaps", []) + bundle.get("retirements", []):
+        if bundle["review"]["status"] != "source-reviewed" or any(key not in refs for key in resolution["evidence"]):
+            raise ValueError("Gap closure needs current source-reviewed evidence")
     entity_ids = {e["id"] for e in known_entities}
+    entity_map = {e["id"]: e for e in known_entities + bundle["entities"]}
     seen = set()
     for entity in bundle["entities"]:
         required(entity, {"id", "kind", "title", "summary", "confidence", "evidence"}, "entity")
@@ -57,6 +61,40 @@ def validate(bundle: dict, root, output: str, task: dict, known_entities: list[d
             if not isinstance(entity[key], str) or not entity[key].strip() or len(entity[key]) > 12000:
                 raise ValueError(f"Invalid entity {key}")
         entity_ids.add(entity["id"])
+        if entity["kind"] == "occurrence":
+            occurrence = entity.get("occurrence")
+            if not occurrence:
+                raise ValueError("Occurrence requires a concept, surface, stable anchor, conditions and implementation references")
+            if entity_map.get(occurrence["concept"], {}).get("kind") not in ("concept", "feature", "setting", "data_entity"):
+                raise ValueError("Occurrence has an unknown concept endpoint")
+            if entity_map.get(occurrence["surface"], {}).get("kind") != "ui_surface":
+                raise ValueError("Occurrence has an unknown surface endpoint")
+        elif "occurrence" in entity:
+            raise ValueError("Only occurrence entities can contain occurrence membership")
+        code_refs = entity.get("code_references", []) + entity.get("occurrence", {}).get("implementation", [])
+        for ref in code_refs:
+            if ref["repository"] != "repository.local" or ref["path"] not in task["paths"]:
+                raise ValueError("Code reference outside the bound repository/task")
+            text = read_source(root, ref["path"])
+            if source_hash(text) != ref["sha256"] or not 1 <= ref["start_line"] <= ref["end_line"] <= len(text.splitlines()):
+                raise ValueError("Stale code reference or invalid range")
+            if not any(e["path"] == ref["path"] and e["sha256"] == ref["sha256"]
+                       and e["start_line"] <= ref["start_line"] <= ref["end_line"] <= e["end_line"]
+                       for key, e in refs.items() if key in entity["evidence"]):
+                raise ValueError("Code reference lacks supporting claim evidence")
+    occurrence_keys = {}
+    for entity in entity_map.values():
+        occurrence = entity.get("occurrence")
+        if not occurrence:
+            continue
+        identity = (occurrence["concept"], occurrence["surface"], occurrence["anchor"],
+                    tuple(sorted(occurrence["conditions"])),
+                    tuple(sorted((ref["repository"], ref["path"], ref["anchor"])
+                                 for ref in occurrence["implementation"])))
+        previous = occurrence_keys.get(identity)
+        if previous and previous != entity["id"] and any(e["id"] == entity["id"] for e in bundle["entities"]):
+            raise ValueError("Duplicate occurrence identity; distinct uses need distinct stable anchors")
+        occurrence_keys[identity] = entity["id"]
     for item in bundle["entities"] + bundle["relations"]:
         required(item, {"id", "confidence", "evidence"}, "claim")
         if not check_id(item["id"]) or item["id"] in seen:
@@ -78,8 +116,27 @@ def validate(bundle: dict, root, output: str, task: dict, known_entities: list[d
         required(relation, {"source", "target", "kind"}, "relation")
         if relation["kind"] not in RELATIONS or any(relation[k] not in entity_ids for k in ("source", "target")):
             raise ValueError("Relation has unknown kind or endpoints")
+        if relation["kind"] in RELATION_ENDPOINTS:
+            source_kinds, target_kinds = RELATION_ENDPOINTS[relation["kind"]]
+            if entity_map[relation["source"]]["kind"] not in source_kinds or entity_map[relation["target"]]["kind"] not in target_kinds:
+                raise ValueError("Illegal typed relation endpoints")
+        if relation["kind"] in ("occurs_on", "realizes"):
+            membership = entity_map[relation["source"]].get("occurrence", {})
+            field = "surface" if relation["kind"] == "occurs_on" else "concept"
+            if membership.get(field) != relation["target"]:
+                raise ValueError("Relation contradicts occurrence membership")
+    from .spec.planner import ROLES
+    for request in bundle.get("followups", []):
+        if request["role"] not in ROLES:
+            raise ValueError("Unknown follow-up role")
+        for path in request["paths"]:
+            safe_path(root, path)
+            if excluded(path, output):
+                raise ValueError("Follow-up cannot target excluded material")
     for gap in bundle["gaps"]:
         required(gap, {"id", "question", "next_step"}, "gap")
+        if any(path not in task["paths"] for path in gap.get("paths", [])):
+            raise ValueError("Gap paths outside task scope")
         if not check_id(gap["id"]) or not all(isinstance(gap[k], str) and gap[k].strip() for k in ("question", "next_step")):
             raise ValueError("Invalid knowledge gap")
 
@@ -94,7 +151,7 @@ def reconcile(entities: list[dict], relations: list[dict], bundles: list[dict]) 
                 existing = target.get(claim["id"])
                 replacement = (existing and (existing.get("stale") or existing.get("conflict")) and claim.get("supersedes") == existing["id"]
                                and bundle["review"]["status"] == "source-reviewed")
-                if existing and not replacement and any(existing.get(k) != claim.get(k) for k in ("summary", "kind", "source", "target")):
+                if existing and not replacement and any(existing.get(k) != claim.get(k) for k in ("summary", "kind", "source", "target", "occurrence", "code_references", "search_terms", "scope", "details")):
                     gaps.append({"id": stable_id("knowledge_gap", claim["id"] + "conflict"),
                                  "question": f"Conflicting interpretations for {claim['id']}; which is supported?",
                                  "next_step": "Review both preserved alternatives against source before replacing this claim.",
