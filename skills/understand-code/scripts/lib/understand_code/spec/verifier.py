@@ -5,6 +5,7 @@ from pathlib import Path
 from ..evidence import verify as verify_evidence, safe_path
 from ..ontology import digest
 from .writer import generated
+from .documentation import assess_documents
 
 
 def verify(root: Path, output: str, state: dict, current: dict) -> dict:
@@ -40,4 +41,5 @@ def verify(root: Path, output: str, state: dict, current: dict) -> dict:
     return {"ok": not errors and not stale and not changed, "errors": errors, "stale_evidence": stale,
             "changed_files": changed, "unreviewed_claims": unreviewed, "pending_tasks": pending,
             "coverage_complete": not pending and not state["plan"]["deferred"] and not current["skipped"],
+            "documentation_quality": assess_documents(state, current),
             "semantic_truth": "not mechanically provable; source-reviewed records identify a human/native reviewer judgment"}

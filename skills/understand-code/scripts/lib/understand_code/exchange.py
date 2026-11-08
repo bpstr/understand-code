@@ -22,6 +22,11 @@ CAPABILITIES = ["source-qualified-references-v1", "snapshot-manifests-v1", "revi
 
 def export_knowledge(state: dict, current: dict) -> dict:
     entities = deepcopy(state["entities"])
+    gaps = deepcopy(state["gaps"])
+    # Authored views are a local extension, not part of the pinned v1 wire
+    # contract. Project them out without changing native state or wire schemas.
+    for claim in entities + [claim for gap in gaps for claim in gap.get("alternatives", [])]:
+        claim.pop("documentation", None)
     envelope = {"contract": "change-knowledge", "version": 1,
                 "producer": {"id": "understand-code", "version": __version__},
                 "repositories": [{"id": "repository.local", "manifest": source_manifest(current)}],
@@ -30,7 +35,7 @@ def export_knowledge(state: dict, current: dict) -> dict:
                 "occurrences": [e for e in entities if e["kind"] == "occurrence"],
                 "relations": deepcopy(state["relations"]),
                 "evidence": [{**deepcopy(e), "repository": "repository.local"} for e in state["evidence"]],
-                "gaps": deepcopy(state["gaps"])}
+                "gaps": gaps}
     validate_contract("change-knowledge", envelope)
     validate_references(envelope)
     return envelope

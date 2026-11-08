@@ -17,8 +17,30 @@ Semantic entities become pages grouped by kind: features, flows, settings, entry
 
 For a setting, model the concrete UI/API writer, persistence, cache invalidation, runtime reader and observable UI/API consumers as separate entities and evidence-backed edges. The resulting change map permits traversal in either direction. If a binding is absent, stop that trace at an UNKNOWN gap. Never turn adjacent filenames into a connected runtime flow.
 
+## Reader-facing documents and specifications
+
+Use optional `entity.documentation` when a request needs a document designed for a reader, rather than only the concept's summary and relationships. Read the [authoring guide](../skills/understand-code/references/documentation-authoring.md) and [canonical document schema](../schemas/documentation.schema.json).
+
+1. Inspect existing docs, public interfaces, callers, validation, tests and relevant ADRs. Identify canonical sources, the audience, purpose and scope. Keep the project's terminology and docstring/schema conventions.
+2. Choose `reference`, `how-to`, `tutorial`, `explanation` or `specification`. Choose `as-built`, `proposal` or `mixed` separately; this describes authority and intent, not evidence confidence.
+3. Attach a stable `doc.*` ID to the owning entity. Add supported sections and exact citations. Represent unanswered topics as `unknown`; use `not-applicable` only with an explicit reason reviewed against the source. Use typed `steps`/`table` fields and literal example code rather than embedding Markdown in escaped prose.
+4. For specifications, add individually identified requirements, basis, rationale and verification procedures with expected results. Cite implementation/configuration for observed behavior and documentary/human evidence for specified intent. Give proposals an explicit origin. A proposed requirement or verification plan does not assert approval, implementation or successful execution.
+5. Provide relevant examples with prerequisites and expected outcomes. Default validation to `not-run`/`none`. Only an authorized external harness can provide a checked result, bound to the exact example content and task snapshot. Preserve failures and distinguish syntax/schema validation from behavior checks; the engine never executes examples.
+6. Obtain source review, apply the findings and inspect the rendered diff. Confirm readable headings, ordered steps, tables, source links and unchanged literal code. The writer links documents from their parent entity and the document index. Preserve maintainer notes through the normal managed-output workflow.
+7. Run `verify --require-doc-quality` and report its per-document blockers/warnings. Supply concrete `review_when` triggers and an owner only if known. Refresh affected requirements and example attestations after source changes.
+
+```bash
+understand-code apply --repo <repo> --findings /tmp/documentation-findings.json
+understand-code verify --repo <repo> --require-doc-quality
+understand-code status --repo <repo>
+```
+
+The [prepared documentation fixtures](../tests/fixtures/documentation/README.md) demonstrate the structures. Their evidence placeholders and execution attestations are filled by the offline test harness; they are not real findings or proof of example execution. Do not apply the fixtures unchanged to a repository.
+
+The `documentation_quality` report covers authored documents only. Its gate requires profile-specific topics, source review and current support, resolved requirement verification, and appropriate example evidence. It does not prove prose entailment or all-interface coverage. A proposal can be ready for review while its proposed behavior remains unimplemented. Existing `verify` integrity, `--require-complete` investigation coverage and `--require-change-complete` change accounting retain their separate meanings.
+
 ## Handoffs
 
 Task-loop agents resolve feature IDs and change maps before fetching source; current source always wins over stale docs. Review agents use semantic impact plus source citations to locate blast radius. After accepted source changes, `update --base <task-base>` prepares affected investigations. Source-dependent claims stay UNKNOWN until reviewed replacements arrive.
 
-Build/test/run pages link to declared manifests and instructions. This tool does not execute repository commands, migrate databases, run tests or rewrite agent instructions. Human notes are passed to subsequent native tasks as editorial corrections to investigate.
+Build/test/run pages link to declared manifests and instructions. This tool does not execute repository commands, migrate databases, run tests or rewrite agent instructions. Recommend needed inline comments/docstrings to the authorized coding workflow; only the configured spec output is written here. Human notes are passed to subsequent native tasks as editorial corrections to investigate.

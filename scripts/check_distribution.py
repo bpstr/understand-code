@@ -30,6 +30,13 @@ def main():
         schema = json.loads((ROOT / f"schemas/{name}.schema.json").read_text())
         if schema["properties"]["kind"]["enum"] != list(vocabulary):
             errors.append(f"Schema vocabulary mismatch: {name}")
+    document = json.loads((ROOT / "schemas/documentation.schema.json").read_text())
+    entity = json.loads((ROOT / "schemas/entity.schema.json").read_text())
+    finding = json.loads((ROOT / "schemas/finding.schema.json").read_text())
+    if entity["properties"]["documentation"]["items"] != document:
+        errors.append("Embedded documentation contract differs from canonical schema")
+    if finding["properties"]["entities"]["items"] != entity:
+        errors.append("Embedded entity contract differs from canonical schema")
     for directory in (ROOT / "skills", ROOT / "docs"):
         for file in directory.rglob("*.md"):
             for target in re.findall(r"\[[^\]]*\]\(([^)]+)\)", file.read_text()):

@@ -38,6 +38,13 @@ def main():
                 "The target is read-only. Return findings to the coordinator; do not modify application code or instructions, "
                 "execute tests, invoke a provider CLI, fetch secrets, or infer missing rationale. "
                 "Every returned claim must be supportable by its cited evidence.\n")
+        if role in ("feature-synthesizer", "spec-curator", "entrypoint-mapper", "test-analyst"):
+            card += ("\nWhen authoring documentation, read the skill's documentation-authoring reference. "
+                     "Use optional entity.documentation records with audience, purpose, scope and a focused profile; "
+                     "keep observed behavior, specified requirements and proposals distinct. "
+                     "Cite each section/requirement through the parent entity's evidence, preserve unknowns, "
+                     "and record example checks only from explicit external provenance. "
+                     "Documentation quality and investigation/change coverage are separate gates.\n")
         expected[ROOT / "agents" / (role + ".md")] = card.encode()
         expected[ROOT / "skills/understand-code/references/agents" / (role + ".md")] = card.encode()
     for file in (ROOT / "schemas").glob("*.json"):

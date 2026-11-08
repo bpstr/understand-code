@@ -1,6 +1,6 @@
 ---
 name: understand-code
-description: Reconstruct an unfamiliar repository into an evidence-backed Codebase Spec; trace features or settings across layers, refresh the spec after changes, or audit agent readiness. Use for persistent codebase understanding, not ordinary code review or implementation.
+description: Reconstruct an unfamiliar repository into an evidence-backed Codebase Spec; write code reference, how-to, tutorial, explanation or implementation specification documents; trace features or settings across layers, refresh documentation after changes, or audit agent readiness. Use for persistent codebase understanding and source-backed documentation, not ordinary code review or application implementation.
 ---
 
 # Understand Code
@@ -36,6 +36,14 @@ For each task:
 5. Save responses outside the target source scan, such as a temporary directory, then run `apply --repo <repo> --findings <response.json>`. Failed validation leaves the spec unchanged. Never edit hashes to fit changed source: run `update`, recapture evidence, and repeat the investigation.
 
 The writer preserves maintainer notes. Treat those notes as higher-authority corrections to investigate, not automatic proof of runtime behavior. If a generated block was edited, preserve that edit in the maintainer section, restore the generated block from Git, then regenerate. Do not discard the edit to make validation pass.
+
+## Author reader-facing documentation
+
+Read [documentation authoring](references/documentation-authoring.md) before adding `entity.documentation`. Select the reader, purpose, scope and profile; inspect canonical docs, schemas and existing language conventions first. Preserve the distinction between observed behavior, existing specified intent, proposed requirements and unknowns. Document caller-visible contracts, relevant failure cases and verifiable requirements with exact evidence, rather than expanding every entity into generic prose.
+
+Use typed sections, steps, tables, requirements and literal examples through the findings contract. Record what examples actually checked, with source- and content-bound provenance; the engine never executes them. Keep unknowns and unexecuted checks visible. Recommend needed inline comments/docstrings to the coding workflow; only the configured spec output is writable here.
+
+Review the rendered documents and run `verify --repo <repo> --require-doc-quality`. Read its blockers and warnings independently of investigation or change coverage. A passing gate establishes bounded structural readiness and recorded review, not semantic truth, approved requirements or whole-repository coverage. Include document IDs, canonical sources and concrete maintenance triggers in the handoff.
 
 ## Refresh and hand off
 

@@ -1,0 +1,20 @@
+{
+  "id": "doc.checkout-how-to",
+  "title": "Inspect the denied-guest branch",
+  "profile": "how-to",
+  "mode": "as-built",
+  "audience": "Developers reviewing the prepared checkout fixture",
+  "purpose": "Explain how to inspect the gate and recognize the relevant assertion without running the fixture.",
+  "scope": "Read-only inspection of checkout.py and test_checkout.py.",
+  "canonical_sources": ["$contract"],
+  "sections": [
+    {"id": "section.prerequisites", "topic": "prerequisites", "title": "Before inspection", "status": "documented", "content": "Locate checkout.py, test_checkout.py, and the prepared contract in the same fixture snapshot.", "evidence": ["$source", "$test", "$contract"]},
+    {"id": "section.steps", "topic": "steps", "title": "Inspection steps", "status": "documented", "content": "Read the implementation and assertion together.", "evidence": ["$source", "$test"], "steps": ["Open the checkout function and find the falsey-user condition.", "Find the guest_checkout setting read and the 401 result.", "Compare the corresponding test assertion; do not report it as executed."]},
+    {"id": "section.verification", "topic": "verification", "title": "Expected inspection result", "status": "documented", "content": "The implementation and test assertion both identify status 401 with requires_login true when guest checkout is disabled.", "evidence": ["$source", "$test"]},
+    {"id": "section.troubleshooting", "topic": "troubleshooting", "title": "When evidence disagrees", "status": "documented", "content": "Use the cited current implementation and recorded contract to describe the discrepancy; a stale README is not execution evidence.", "evidence": ["$source", "$contract"]}
+  ],
+  "examples": [
+    {"id": "example.inspect-assertion", "title": "Assertion to recognize", "kind": "illustrative", "language": "python", "code": "assert checkout(None, []) == {'status': 401, 'requires_login': True}\n", "prerequisites": "Read the surrounding test setup before interpreting this assertion.", "expected": "Recognize the denied-guest assertion; this snippet is illustrative and is not executed.", "evidence": ["$test"], "validation": {"status": "not-run", "level": "none", "reason": "Prepared read-only illustration; no execution claim."}}
+  ],
+  "review_when": ["the cited assertion or conditional changes."]
+}

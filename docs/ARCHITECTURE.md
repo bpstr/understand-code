@@ -9,10 +9,12 @@ The deterministic engine is Python 3.10+ using the standard library only. Host-n
 | Repository/host instructions | Select optional code-intelligence tools for native-session retrieval |
 | `spec/planner.py`, `providers/` | Adaptive scopes and native Claude/Codex task contracts |
 | `evidence.py`, `contracts.py`, `findings.py` | Safe paths, source hashes, closed JSON input schemas, source review contracts and contradiction reconciliation |
+| `documentation.py` | Optional authored-document contracts, nested evidence/authority validation and exact example fingerprints |
 | `impact.py` | Evidence-to-concept mapping and conservative transitive dependency/consumer impact |
 | `audit.py` | Read-only instruction observations and recommendations |
 | `orchestrator.py` | State transitions, locks, stale-claim quarantine, accepted response archival and handoff |
 | `spec/writer.py`, `spec/verifier.py` | Markdown/source links, protected human notes, staged replacement and freshness checks |
+| `spec/documentation.py` | Profile-aware document rendering and a separate bounded documentation-readiness assessment |
 
 `src/` and `schemas/` are canonical. `scripts/build_bundle.py` generates the self-contained skill engine, schema resources and specialist cards. Distribution checks prevent shipped copies drifting. The Python package embeds the same schemas via package data.
 
@@ -31,6 +33,18 @@ Source, external retrieval output and provider responses are untrusted input. Th
 Hash checks prove identity and freshness, not semantic entailment. `source-reviewed` records an accountable judgment; the software cannot prevent someone deliberately lying in that field. Reviewers must inspect cited code, distinguish declarations from execution and preserve unknowns. Generated natural-language details obey the same confidence/evidence contract as summaries.
 
 Output is staged beside the destination and swapped with rollback on ordinary failures. This is process-level transactional replacement, not a crash-proof database transaction. A hard kill can require backup recovery; see [maintenance](../skills/understand-code/references/maintenance.md). The target source tree is not changed and the engine never commits or pushes it.
+
+## Authored documents
+
+The optional `entity.documentation` array extends native findings without changing legacy entities. `schemas/documentation.schema.json` defines reader profiles, authority modes, plain-text sections, typed steps/tables, requirements and examples. Nested evidence must belong to the parent entity and the current response. Document IDs are globally unique and remain attached to one entity; the document inherits its review, confidence, staleness and conflict state.
+
+The renderer writes managed `documents/<id>.md` pages and navigation through the existing transactional writer. Plain prose is escaped, paragraphs are retained, and code remains literal inside safe fences. Managed-marker parsing distinguishes generated-region delimiters from identical strings inside fenced examples. Documents receive the same human-note, generated-edit and retirement protection as concept pages.
+
+Requirement authority is independent of confidence: observed behavior, documentary intent and proposed obligations have different evidence rules. Verification procedures describe intended checks; test citations identify assertions. Example attestations separately record check level and external-run provenance, bound to the source snapshot and a fingerprint of language/code/prerequisites/expected result. Neither structure executes code or turns a reviewer label into runtime proof.
+
+`verify` and `status` expose `documentation_quality`. The optional `--require-doc-quality` gate checks authored records for the required profile topics, current reviewed support, resolvable requirements and appropriate example validation. It reports blockers and warnings without changing legacy integrity or coverage semantics. Semantic adequacy and whole-repository documentation coverage remain outside this mechanical assessment.
+
+Authored documents participate in reconciliation and stale-claim handling. The closed Change Knowledge Exchange v1 format deliberately omits this native-only extension, including within conflict alternatives; its pinned wire schema remains unchanged. See [authoring](../skills/understand-code/references/documentation-authoring.md) for native use and [testing](TESTING.md) for prepared evidence limits.
 
 ## Semantic change coverage
 

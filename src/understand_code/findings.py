@@ -8,6 +8,7 @@ from .evidence import verify, safe_path, excluded, read_source, source_hash
 from .ontology import KINDS, RELATIONS, RELATION_ENDPOINTS, CONFIDENCES, check_id, stable_id
 from .contracts import validate_finding
 from .git import head
+from .documentation import validate_documents, validate_document_ids
 
 
 def required(obj: dict, fields: set[str], label: str) -> None:
@@ -50,6 +51,7 @@ def validate(bundle: dict, root, output: str, task: dict, known_entities: list[d
             raise ValueError("Gap closure needs current source-reviewed evidence")
     entity_ids = {e["id"] for e in known_entities}
     entity_map = {e["id"]: e for e in known_entities + bundle["entities"]}
+    previous_entities = {e["id"]: e for e in known_entities}
     seen = set()
     for entity in bundle["entities"]:
         required(entity, {"id", "kind", "title", "summary", "confidence", "evidence"}, "entity")
@@ -61,6 +63,9 @@ def validate(bundle: dict, root, output: str, task: dict, known_entities: list[d
             if not isinstance(entity[key], str) or not entity[key].strip() or len(entity[key]) > 12000:
                 raise ValueError(f"Invalid entity {key}")
         entity_ids.add(entity["id"])
+        if previous_entities.get(entity["id"], {}).get("documentation") and "documentation" not in entity:
+            raise ValueError("An authored entity update must carry its documentation or explicitly retire it with an empty list")
+        validate_documents(entity, refs, task["snapshot"])
         if entity["kind"] == "occurrence":
             occurrence = entity.get("occurrence")
             if not occurrence:
@@ -82,6 +87,7 @@ def validate(bundle: dict, root, output: str, task: dict, known_entities: list[d
                        and e["start_line"] <= ref["start_line"] <= ref["end_line"] <= e["end_line"]
                        for key, e in refs.items() if key in entity["evidence"]):
                 raise ValueError("Code reference lacks supporting claim evidence")
+    validate_document_ids(bundle["entities"], known_entities)
     occurrence_keys = {}
     supplied_ids = {entity["id"] for entity in bundle["entities"]}
     for entity in entity_map.values():
@@ -152,7 +158,13 @@ def reconcile(entities: list[dict], relations: list[dict], bundles: list[dict]) 
                 existing = target.get(claim["id"])
                 replacement = (existing and (existing.get("stale") or existing.get("conflict")) and claim.get("supersedes") == existing["id"]
                                and bundle["review"]["status"] == "source-reviewed")
-                if existing and not replacement and any(existing.get(k) != claim.get(k) for k in ("summary", "kind", "source", "target", "occurrence", "code_references", "search_terms", "scope", "details")):
+                changed = existing and any(existing.get(k) != claim.get(k) for k in ("summary", "kind", "source", "target", "occurrence", "code_references", "search_terms", "scope", "details"))
+                # Adding the first authored view is compatible with an established
+                # semantic entity. Rewriting/removing authored text requires the
+                # same explicit conflict resolution as all other interpretation.
+                changed = changed or (existing and existing.get("documentation")
+                                      and existing.get("documentation") != claim.get("documentation"))
+                if existing and not replacement and changed:
                     gaps.append({"id": stable_id("knowledge_gap", claim["id"] + "conflict"),
                                  "question": f"Conflicting interpretations for {claim['id']}; which is supported?",
                                  "next_step": "Review both preserved alternatives against source before replacing this claim.",

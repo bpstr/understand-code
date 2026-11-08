@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add reader-focused reference, how-to, tutorial, explanation and specification authoring guidance, with a primary-source research and gap analysis.
+- Add optional structured documents with scoped evidence, authority modes, stable requirements, verification plans and maintenance triggers.
+- Render paragraphs, ordered procedures, tables and literal examples as managed document pages with preserved human notes.
+- Bind external example-check provenance to the source snapshot and exact example content, retaining explicit unexecuted and failed states.
+- Add a separate documentation-readiness report and optional gate, with prepared offline contract regressions and unchanged legacy verification/exchange behavior.
 - Add evidence-backed concepts, phrase vocabulary, source-qualified occurrences and typed surface/composition relationships.
 - Add independent semantic scopes, durable follow-ups, baseline/target obligation ledgers, explicit retirement/identity reconciliation and a separate strict change-completeness gate.
 - Add five coverage axes, generated occurrence/change/source maps, external check provenance and conservative stale-review invalidation.
