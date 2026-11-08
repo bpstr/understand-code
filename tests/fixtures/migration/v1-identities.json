@@ -1,0 +1,29 @@
+[
+  {
+    "value": {
+      "10": "ten",
+      "2": "two",
+      "\u00e9": "\u00e1rv\u00edzt\u0171r\u0151",
+      "astral": "\ud83e\udded",
+      "ascii": "\u007f",
+      "newlines": "\r\n\t"
+    },
+    "spaced": "{\"10\": \"ten\", \"2\": \"two\", \"ascii\": \"\\u007f\", \"astral\": \"\\ud83e\\udded\", \"newlines\": \"\\r\\n\\t\", \"\\u00e9\": \"\\u00e1rv\\u00edzt\\u0171r\\u0151\"}",
+    "compact": "{\"10\":\"ten\",\"2\":\"two\",\"ascii\":\"\\u007f\",\"astral\":\"\\ud83e\\udded\",\"newlines\":\"\\r\\n\\t\",\"\\u00e9\":\"\\u00e1rv\\u00edzt\\u0171r\\u0151\"}",
+    "pretty": "{\n  \"10\": \"ten\",\n  \"2\": \"two\",\n  \"ascii\": \"\\u007f\",\n  \"astral\": \"\\ud83e\\udded\",\n  \"newlines\": \"\\r\\n\\t\",\n  \"\\u00e9\": \"\\u00e1rv\\u00edzt\\u0171r\\u0151\"\n}",
+    "sha256": "26766d417c54eea869859bc79132ad5507ce77bb1115d79e23413110904c105c"
+  },
+  {
+    "value": [
+      "\u4e2d",
+      true,
+      null,
+      -17,
+      5000000
+    ],
+    "spaced": "[\"\\u4e2d\", true, null, -17, 5000000]",
+    "compact": "[\"\\u4e2d\",true,null,-17,5000000]",
+    "pretty": "[\n  \"\\u4e2d\",\n  true,\n  null,\n  -17,\n  5000000\n]",
+    "sha256": "76b60fb1e210861282ad70eca80e757626fa19682eb951be14353583145a19c2"
+  }
+]

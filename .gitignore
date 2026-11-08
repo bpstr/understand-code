@@ -1,10 +1,6 @@
-__pycache__/
-*.py[cod]
-*.egg-info/
-.venv/
-build/
+node_modules/
 dist/
-.coverage
-.pytest_cache/
+coverage/
+*.tsbuildinfo
 .DS_Store
 .codebase-memory/

@@ -1,22 +1,22 @@
 # Architecture
 
-The deterministic engine is Python 3.10+ using the standard library only. Host-native reasoning is deliberately outside the engine, so CLI tests and CI cannot accidentally construct an inference client.
+The deterministic engine is TypeScript compiled to JavaScript for Node.js 22+, using Node built-ins only at runtime. Host-native reasoning is deliberately outside the engine, so CLI tests and CI cannot accidentally construct an inference client.
 
 | Layer | Responsibility |
 | --- | --- |
-| `cli.py` | Commands, local/worktree policy, structured output and exit status |
-| `discovery.py`, `git.py` | Git-aware bounded inventory, exact Python syntax, heuristic candidates, diff/rename handling |
+| `cli.ts` | Commands, local/worktree policy, structured output and exit status |
+| `discovery.ts`, `git.ts` | Git-aware bounded inventory, conservative language/declaration candidates, heuristic candidates, diff/rename handling |
 | Repository/host instructions | Select optional code-intelligence tools for native-session retrieval |
-| `spec/planner.py`, `providers/` | Adaptive scopes and native Claude/Codex task contracts |
-| `evidence.py`, `contracts.py`, `findings.py` | Safe paths, source hashes, closed JSON input schemas, source review contracts and contradiction reconciliation |
-| `documentation.py` | Optional authored-document contracts, nested evidence/authority validation and exact example fingerprints |
-| `impact.py` | Evidence-to-concept mapping and conservative transitive dependency/consumer impact |
-| `audit.py` | Read-only instruction observations and recommendations |
-| `orchestrator.py` | State transitions, locks, stale-claim quarantine, accepted response archival and handoff |
-| `spec/writer.py`, `spec/verifier.py` | Markdown/source links, protected human notes, staged replacement and freshness checks |
-| `spec/documentation.py` | Profile-aware document rendering and a separate bounded documentation-readiness assessment |
+| `spec/planner.ts`, `providers/` | Adaptive scopes and native Claude/Codex task contracts |
+| `evidence.ts`, `contracts.ts`, `findings.ts` | Safe paths, source hashes, closed JSON input schemas, source review contracts and contradiction reconciliation |
+| `documentation.ts` | Optional authored-document contracts, nested evidence/authority validation and exact example fingerprints |
+| `impact.ts` | Evidence-to-concept mapping and conservative transitive dependency/consumer impact |
+| `audit.ts` | Read-only instruction observations and recommendations |
+| `orchestrator.ts` | State transitions, locks, stale-claim quarantine, accepted response archival and handoff |
+| `spec/writer.ts`, `spec/verifier.ts` | Markdown/source links, protected human notes, staged replacement and freshness checks |
+| `spec/documentation.ts` | Profile-aware document rendering and a separate bounded documentation-readiness assessment |
 
-`src/` and `schemas/` are canonical. `scripts/build_bundle.py` generates the self-contained skill engine, schema resources and specialist cards. Distribution checks prevent shipped copies drifting. The Python package embeds the same schemas via package data.
+`src/` and `schemas/` are canonical. `scripts/build_bundle.mjs` compiles TypeScript, emits declarations, and generates the self-contained skill engine, schema resources and specialist cards. Distribution checks compile independently into a temporary directory and reject drift without rewriting checked files. The npm archive embeds the same schemas; the skill includes compiled JavaScript and its own ESM package boundary. Neither installed form needs a compiler or Python.
 
 ## State
 
@@ -48,7 +48,7 @@ Authored documents participate in reconciliation and stale-claim handling. The c
 
 ## Semantic change coverage
 
-`change_scope.py` provides an independent source roster and typed relevance traversal; it does not replace conservative `impact.py` invalidation. `coverage.py` maintains source-bound baseline/target inventories, retained occurrence and anchor obligations, reviewed dispositions, identity mappings and five separate coverage axes. `exchange.py` supplies a bounded offline wire adapter with candidate-only imports and source-mismatch quarantine.
+`change_scope.ts` provides an independent source roster and typed relevance traversal; it does not replace conservative `impact.ts` invalidation. `coverage.ts` maintains source-bound baseline/target inventories, retained occurrence and anchor obligations, reviewed dispositions, identity mappings and five separate coverage axes. `exchange.ts` supplies a bounded offline wire adapter with candidate-only imports and source-mismatch quarantine.
 
 The orchestrator loads hashed optional scope/import/retirement metadata, validates findings and ledger packets before publication, preserves review/discovery histories, and writes through the existing transactional spec writer. Native roles interpret source; the coding harness alone edits applications and executes authorized behavioral checks. See [change coverage](CHANGE_COVERAGE.md) for the completion contract and compatibility boundaries.
 ## Retrieval boundary

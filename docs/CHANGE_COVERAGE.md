@@ -36,7 +36,7 @@ understand-code scope "avatar presentation" --repo . \
 
 `--example` supplies investigation seeds, not limits. Only explicit `--boundary` and `--exclude-path` prefixes narrow discovery. They are recorded in the request. A broader independent roster is deliberately conservative: being in the roster does not mean a file needs editing. Unknown terms produce a concept-resolution gap and a bounded independent plan, rather than an empty success or a guess at the intended feature.
 
-The intent choices are `ui_standardization`, `settings_change` and `cross_cutting`. Traversal uses different relationship policies; `impact.py` retains its separate conservative freshness invalidation.
+The intent choices are `ui_standardization`, `settings_change` and `cross_cutting`. Traversal uses different relationship policies; `impact.ts` retains its separate conservative freshness invalidation.
 
 ## Native investigation and evidence
 

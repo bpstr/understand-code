@@ -5,7 +5,7 @@ description: Reconstruct an unfamiliar repository into an evidence-backed Codeba
 
 # Understand Code
 
-Produce a source-backed model of architecture, features, flows, settings effects and change impact in `docs/codebase/`. The bundled Python engine owns inventory, task scope, evidence, reconciliation and writing. You own source interpretation in the current native Claude or Codex session.
+Produce a source-backed model of architecture, features, flows, settings effects and change impact in `docs/codebase/`. The bundled Node.js engine owns inventory, task scope, evidence, reconciliation and writing. You own source interpretation in the current native Claude or Codex session.
 
 ## Establish scope and evidence
 
@@ -14,7 +14,7 @@ Read applicable repository/ancestor instructions and Git state. Follow the user'
 Use the bundled runner relative to this SKILL.md:
 
 ```bash
-python3 <skill-directory>/scripts/run.py bootstrap <repository> --provider codex
+node <skill-directory>/scripts/run.mjs bootstrap <repository> --provider codex
 ```
 
 Use `--provider claude` in Claude. Default bootstrap creates an isolated worktree from a clean committed checkout. When the user requests the current branch or local docs, use `--write-mode local`. Continue subsequent commands with `--repo <reported-repository>`; keep the same `--output` if customized. Never silently exclude uncommitted changes by switching to a clean snapshot.
@@ -48,11 +48,11 @@ Review the rendered documents and run `verify --repo <repo> --require-doc-qualit
 ## Refresh and hand off
 
 ```bash
-python3 <skill-directory>/scripts/run.py focus "checkout" --repo <repo>
-python3 <skill-directory>/scripts/run.py update --repo <repo> --base <task-base>
-python3 <skill-directory>/scripts/run.py verify --repo <repo>
-python3 <skill-directory>/scripts/run.py status --repo <repo>
-python3 <skill-directory>/scripts/run.py agent-audit --repo <repo>
+node <skill-directory>/scripts/run.mjs focus "checkout" --repo <repo>
+node <skill-directory>/scripts/run.mjs update --repo <repo> --base <task-base>
+node <skill-directory>/scripts/run.mjs verify --repo <repo>
+node <skill-directory>/scripts/run.mjs status --repo <repo>
+node <skill-directory>/scripts/run.mjs agent-audit --repo <repo>
 ```
 
 Read [maintenance](references/maintenance.md) for stale claims, renames, conflicts or human edits. Work through relevant pending tasks and review the resulting diff. Understand Code owns no external-index refresh requirement; installed retrieval tools remain governed by their own repository/host instructions.

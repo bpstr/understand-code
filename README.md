@@ -2,7 +2,7 @@
 
 **Reconstruct what a codebase does, where its features live, and how changes travel through it—with source evidence.**
 
-Understand Code is a Python CLI and self-contained Claude Code / Codex skill. It produces a repository-native **Codebase Spec** in `docs/codebase/`: Markdown concept pages, source citations, typed relationships, change maps and explicit knowledge gaps. Reviewed findings can also include reader-facing reference, how-to, tutorial, explanation and specification documents.
+Understand Code is a Node.js CLI, written in TypeScript, and a self-contained Claude Code / Codex skill. It produces a repository-native **Codebase Spec** in `docs/codebase/`: Markdown concept pages, source citations, typed relationships, change maps and explicit knowledge gaps. Reviewed findings can also include reader-facing reference, how-to, tutorial, explanation and specification documents.
 
 It combines deterministic inventory and validation with bounded investigations in your existing Claude or Codex session. It never starts provider subprocesses, executes the target application, or silently spends API credits.
 
@@ -30,10 +30,10 @@ claude plugin install understand-code@understand-code
 
 Restart Claude Code and invoke `/understand-code:understand-code reconstruct this repository`.
 
-**Standalone CLI** — Python 3.10+, Git, no runtime Python dependencies:
+**Standalone CLI** — Node.js 22+, Git, no Python or runtime npm dependencies:
 
 ```bash
-uv tool install 'git+https://github.com/bpstr/understand-code.git@v1.0.0'
+npm install --global https://github.com/bpstr/understand-code/releases/download/v2.0.0/understand-code-2.0.0.tgz
 understand-code bootstrap /path/to/repository
 ```
 
@@ -69,7 +69,7 @@ Bootstrap inventories the repository and writes an investigation plan. It **does
 
 | Capability | Behavior |
 | --- | --- |
-| Structural discovery | Git-aware file inventory, language/manifests, Python symbols, route/settings/UI/data/event/test candidates, explicit scan limits |
+| Structural discovery | Git-aware file inventory, languages/manifests, declaration and route/settings/UI/data/event/test candidates, explicit scan limits |
 | Native agents | 18 specialist roles; adaptive quick/standard/deep budgets; Claude/Codex task formats; sequential or authorized native delegation |
 | Semantic model | Typed entities and directed relationships; stable IDs, aliases, feature/flow pages and source-linked change maps |
 | Evidence | Exact ranges, file and excerpt hashes, source snapshots, explicit confidence and recorded semantic review |
@@ -77,7 +77,7 @@ Bootstrap inventories the repository and writes an investigation plan. It **does
 | Incremental updates | Git base + working-tree hashes; renames/deletions; transitive semantic impact; stale claims demoted to UNKNOWN |
 | Human knowledge | Maintainer notes preserved; generated edits block replacement; conflicts retain alternatives |
 | Agent readiness | Instruction scopes, size, duplicate content, missing link observations and bounded recommendations |
-| Distribution | Codex/Claude manifests and marketplaces, standalone skill runner, installable Python package, offline CI and release archives |
+| Distribution | Codex/Claude manifests and marketplaces, standalone JavaScript skill runner, installable npm archive with TypeScript declarations, offline CI and release archives |
 
 The default output includes overview, concept pages, evidence, instruction/readiness reports, operational pointers, glossary and gaps. Relevant feature/flow/settings/UI/data pages appear when findings support them. Empty architecture claims are not filled with plausible prose.
 
@@ -99,9 +99,9 @@ See the [authoring guide](skills/understand-code/references/documentation-author
 
 `EXTRACTED` means reviewed, direct evidence; `CORROBORATED` requires independent evidence; `INFERRED` is incomplete interpretation; `UNKNOWN` is an unresolved question. Mechanical checks can establish that a citation exists and is current. **They cannot prove a natural-language claim is true.** Reviewer provenance, gaps and coverage remain visible.
 
-External tool results are retrieval hints. Regex matches are candidates. Test source establishes assertions, not a passing test run. Static links do not establish runtime reachability. Architectural intent needs explicit evidence. There is no live-provider quality claim: the shipped regression suite uses prepared fixtures only.
+External tool results are retrieval hints. Regex matches are candidates. Python remains supported as source text; declaration discovery is conservative and explicitly inferred rather than an exact Python AST pass. No language runtime is invoked to inspect target code. Test source establishes assertions, not a passing test run. Static links do not establish runtime reachability. Architectural intent needs explicit evidence. There is no live-provider quality claim: the shipped regression suite uses prepared fixtures only.
 
-This release does not execute runtime traces or run autonomous paid headless agents. Native sessions provide reasoning and optional repository-configured retrieval; no external index refresh is owned by the engine. These boundaries and the [v1 acceptance map](docs/ACCEPTANCE.md) distinguish implemented capabilities from future extensions.
+This release does not execute runtime traces or run autonomous paid headless agents. Native sessions provide reasoning and optional repository-configured retrieval; no external index refresh is owned by the engine. These boundaries and the [release acceptance map](docs/ACCEPTANCE.md) distinguish implemented capabilities from future extensions.
 
 ## Change completeness, separately from investigation completeness
 
@@ -119,11 +119,12 @@ Missing criteria, unresolved discovery, unaccounted occurrences and required-but
 ## Develop
 
 ```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -e .
-PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -v
-python3 scripts/build_bundle.py
-python3 scripts/check_distribution.py
+npm ci --ignore-scripts
+npm run build
+npm test
+npm run check
+npm run release
+npm run check:artifacts
 ```
 
 All automated tests are offline and deterministic. Never load `.secrets`, record fixtures from providers, or add a paid test opt-in. See [testing policy](docs/TESTING.md) and [contributing](CONTRIBUTING.md).

@@ -10,7 +10,7 @@
     {
       "name": "understand-code",
       "source": "./",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "description": "Evidence-backed codebase reconstruction: architecture, features, flows, settings effects, and source-bound change maps.",
       "author": {
         "name": "bpstr",

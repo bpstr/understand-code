@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 2.0.0 — 2026-11-08
+
+- Replace the Python runtime, build tools, test harness and wheel with strict TypeScript, compiled JavaScript, Node.js tooling and an installable npm archive. Node.js 22+ is required; release packages have no runtime npm dependencies.
+- Keep the self-contained Claude/Codex skill, plugin manifests, schema resources and specialist role cards synchronized from canonical source. Include TypeScript declarations in the npm archive.
+- Preserve evidence identity, existing state and the pinned Change Knowledge v1 wire contract. Continue reading Python as source data with conservative, explicitly inferred declaration candidates instead of requiring its AST runtime.
+- Validate source and packaged entrypoints on Node.js 22, 24 and 26; exercise released archives and offline npm installation with no Python on PATH.
+- Publish versioned plugin/skill ZIPs, npm archives and SHA-256 checksums only after CI validates the exact main commit. Existing tags are not overwritten.
+
 - Add reader-focused reference, how-to, tutorial, explanation and specification authoring guidance, with a primary-source research and gap analysis.
 - Add optional structured documents with scoped evidence, authority modes, stable requirements, verification plans and maintenance triggers.
 - Render paragraphs, ordered procedures, tables and literal examples as managed document pages with preserved human notes.

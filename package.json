@@ -1,0 +1,71 @@
+{
+  "name": "understand-code",
+  "version": "2.0.0",
+  "description": "Evidence-backed codebase reconstruction and documentation for Claude, Codex, and humans",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "understand-code": "bin/understand-code.mjs"
+  },
+  "main": "lib/understand_code/index.js",
+  "types": "lib/understand_code/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/understand_code/index.d.ts",
+      "import": "./lib/understand_code/index.js"
+    },
+    "./*": {
+      "types": "./lib/understand_code/*.d.ts",
+      "import": "./lib/understand_code/*.js"
+    }
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "schemas/",
+    "skills/",
+    "agents/",
+    ".codex-plugin/",
+    ".claude-plugin/",
+    ".agents/",
+    "docs/",
+    "README.md",
+    "INSTALL.md",
+    "LICENSE",
+    "SECURITY.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build_bundle.mjs",
+    "typecheck": "tsc --noEmit",
+    "check": "node scripts/check_distribution.mjs",
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "release": "node scripts/release.mjs",
+    "check:artifacts": "node scripts/check_artifacts.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "5.9.3"
+  },
+  "license": "MIT",
+  "author": "bpstr",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bpstr/understand-code.git"
+  },
+  "homepage": "https://github.com/bpstr/understand-code",
+  "bugs": {
+    "url": "https://github.com/bpstr/understand-code/issues"
+  },
+  "keywords": [
+    "architecture",
+    "documentation",
+    "codebase",
+    "claude",
+    "codex",
+    "agent-skills",
+    "typescript"
+  ]
+}
