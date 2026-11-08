@@ -1,0 +1,1113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bpstr/understand-code/schemas/finding.schema.json",
+  "title": "finding",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "snapshot",
+    "entities",
+    "relations",
+    "evidence",
+    "gaps",
+    "review"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+    },
+    "snapshot": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://github.com/bpstr/understand-code/schemas/entity.schema.json",
+        "title": "entity",
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "summary",
+          "confidence",
+          "evidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "kind": {
+            "enum": [
+              "system",
+              "module",
+              "feature",
+              "flow",
+              "entrypoint",
+              "ui_surface",
+              "component",
+              "setting",
+              "feature_flag",
+              "data_entity",
+              "external_system",
+              "event",
+              "job",
+              "permission",
+              "test_behavior",
+              "decision",
+              "constraint",
+              "knowledge_gap",
+              "concept",
+              "occurrence"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "EXTRACTED",
+              "CORROBORATED",
+              "INFERRED",
+              "UNKNOWN"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            },
+            "uniqueItems": true,
+            "maxItems": 500
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            }
+          },
+          "supersedes": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 12000
+            }
+          },
+          "search_terms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "maxItems": 32,
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "code_references": {
+            "type": "array",
+            "items": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "https://github.com/bpstr/understand-code/schemas/code-reference.schema.json",
+              "title": "code-reference",
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+                },
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                "anchor": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "start_line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "end_line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "symbol": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "producer_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "repository",
+                "path",
+                "anchor",
+                "sha256",
+                "start_line",
+                "end_line"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 100,
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "occurrence": {
+            "type": "object",
+            "properties": {
+              "concept": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+              },
+              "surface": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+              },
+              "anchor": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "conditions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "maxItems": 32,
+                "minItems": 0,
+                "uniqueItems": true
+              },
+              "implementation": {
+                "type": "array",
+                "items": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "$id": "https://github.com/bpstr/understand-code/schemas/code-reference.schema.json",
+                  "title": "code-reference",
+                  "type": "object",
+                  "properties": {
+                    "repository": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+                    },
+                    "path": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4096
+                    },
+                    "anchor": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "start_line": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "end_line": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "symbol": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    },
+                    "producer_id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    }
+                  },
+                  "required": [
+                    "repository",
+                    "path",
+                    "anchor",
+                    "sha256",
+                    "start_line",
+                    "end_line"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 100,
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "concept",
+              "surface",
+              "anchor",
+              "conditions",
+              "implementation"
+            ],
+            "additionalProperties": false
+          },
+          "documentation": {
+            "type": "array",
+            "items": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "https://github.com/bpstr/understand-code/schemas/documentation.schema.json",
+              "title": "documentation",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160,
+                  "pattern": "^doc\\.[a-z0-9][a-z0-9_.-]{0,154}$"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "profile": {
+                  "enum": [
+                    "reference",
+                    "how-to",
+                    "tutorial",
+                    "explanation",
+                    "specification"
+                  ]
+                },
+                "mode": {
+                  "enum": [
+                    "as-built",
+                    "proposal",
+                    "mixed"
+                  ]
+                },
+                "audience": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "purpose": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "scope": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                "sections": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160,
+                        "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+                      },
+                      "topic": {
+                        "enum": [
+                          "context",
+                          "design",
+                          "tradeoffs",
+                          "prerequisites",
+                          "steps",
+                          "verification",
+                          "troubleshooting",
+                          "inputs",
+                          "outputs",
+                          "errors",
+                          "side-effects",
+                          "behavior",
+                          "interfaces",
+                          "data",
+                          "failures",
+                          "security",
+                          "quality",
+                          "compatibility",
+                          "operations",
+                          "decisions",
+                          "constraints"
+                        ]
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "status": {
+                        "enum": [
+                          "documented",
+                          "unknown",
+                          "not-applicable"
+                        ]
+                      },
+                      "content": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 12000
+                      },
+                      "evidence": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160,
+                          "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+                        },
+                        "minItems": 0,
+                        "maxItems": 128,
+                        "uniqueItems": true
+                      },
+                      "steps": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 12000
+                        },
+                        "minItems": 1,
+                        "maxItems": 64
+                      },
+                      "table": {
+                        "type": "object",
+                        "properties": {
+                          "columns": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            },
+                            "minItems": 1,
+                            "maxItems": 8
+                          },
+                          "rows": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2048
+                              },
+                              "minItems": 1,
+                              "maxItems": 8
+                            },
+                            "minItems": 1,
+                            "maxItems": 128
+                          }
+                        },
+                        "required": [
+                          "columns",
+                          "rows"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "topic",
+                      "title",
+                      "status",
+                      "content",
+                      "evidence"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 0,
+                  "maxItems": 32
+                },
+                "requirements": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160,
+                        "pattern": "^req\\.[a-z0-9][a-z0-9_.-]{0,154}$"
+                      },
+                      "statement": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 12000
+                      },
+                      "basis": {
+                        "enum": [
+                          "observed",
+                          "specified",
+                          "proposed",
+                          "unknown"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 12000
+                      },
+                      "evidence": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160,
+                          "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+                        },
+                        "minItems": 0,
+                        "maxItems": 128,
+                        "uniqueItems": true
+                      },
+                      "verification": {
+                        "type": "object",
+                        "properties": {
+                          "method": {
+                            "enum": [
+                              "test",
+                              "inspection",
+                              "analysis",
+                              "demonstration",
+                              "unresolved"
+                            ]
+                          },
+                          "procedure": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 12000
+                          },
+                          "expected": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 12000
+                          },
+                          "test_evidence": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 160,
+                              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+                            },
+                            "minItems": 0,
+                            "maxItems": 128,
+                            "uniqueItems": true
+                          }
+                        },
+                        "required": [
+                          "method",
+                          "procedure",
+                          "expected",
+                          "test_evidence"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "origin": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 12000
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "statement",
+                      "basis",
+                      "rationale",
+                      "evidence",
+                      "verification"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 0,
+                  "maxItems": 128
+                },
+                "examples": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160,
+                        "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "kind": {
+                        "enum": [
+                          "runnable",
+                          "illustrative"
+                        ]
+                      },
+                      "language": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "pattern": "^[A-Za-z0-9_+-]+$"
+                      },
+                      "code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 32768
+                      },
+                      "prerequisites": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 12000
+                      },
+                      "expected": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 12000
+                      },
+                      "evidence": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160,
+                          "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+                        },
+                        "minItems": 0,
+                        "maxItems": 128,
+                        "uniqueItems": true
+                      },
+                      "validation": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "enum": [
+                              "not-run",
+                              "passed",
+                              "failed"
+                            ]
+                          },
+                          "level": {
+                            "enum": [
+                              "none",
+                              "syntax",
+                              "schema",
+                              "behavior"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 12000
+                          },
+                          "provenance": {
+                            "type": "object",
+                            "properties": {
+                              "command": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 12000
+                              },
+                              "environment": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 12000
+                              },
+                              "snapshot": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64,
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "checked_at": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              },
+                              "runner": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 512
+                              },
+                              "output_sha256": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64,
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "example_sha256": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64,
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "exit_code": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "command",
+                              "environment",
+                              "snapshot",
+                              "checked_at",
+                              "runner",
+                              "output_sha256",
+                              "example_sha256",
+                              "exit_code"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "status",
+                          "level",
+                          "reason"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "kind",
+                      "language",
+                      "code",
+                      "prerequisites",
+                      "expected",
+                      "evidence",
+                      "validation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 0,
+                  "maxItems": 32
+                },
+                "canonical_sources": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160,
+                    "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+                  },
+                  "minItems": 0,
+                  "maxItems": 128,
+                  "uniqueItems": true
+                },
+                "review_when": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048
+                  },
+                  "minItems": 1,
+                  "maxItems": 32,
+                  "uniqueItems": true
+                },
+                "owner": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "requirement_convention": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "profile",
+                "mode",
+                "audience",
+                "purpose",
+                "scope",
+                "sections",
+                "review_when"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0,
+            "maxItems": 8
+          }
+        },
+        "additionalProperties": false
+      },
+      "maxItems": 500
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://github.com/bpstr/understand-code/schemas/relation.schema.json",
+        "title": "relation",
+        "type": "object",
+        "required": [
+          "id",
+          "source",
+          "target",
+          "kind",
+          "confidence",
+          "evidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "target": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "kind": {
+            "enum": [
+              "implemented_by",
+              "exposed_at",
+              "entered_through",
+              "executes",
+              "calls",
+              "reads",
+              "writes",
+              "emits",
+              "consumes",
+              "written_by",
+              "persisted_in",
+              "read_by",
+              "affects",
+              "reused_by",
+              "guards",
+              "controls",
+              "verifies",
+              "depends_on",
+              "invalidates",
+              "propagates_to",
+              "constrained_by",
+              "configured_by",
+              "has_aspect",
+              "primary_surface",
+              "presents",
+              "renders",
+              "occurs_on",
+              "realizes"
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "EXTRACTED",
+              "CORROBORATED",
+              "INFERRED",
+              "UNKNOWN"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            },
+            "uniqueItems": true,
+            "maxItems": 500
+          },
+          "supersedes": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "additionalProperties": false
+      },
+      "maxItems": 500
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://github.com/bpstr/understand-code/schemas/evidence.schema.json",
+        "title": "evidence",
+        "type": "object",
+        "required": [
+          "id",
+          "path",
+          "start_line",
+          "end_line",
+          "sha256",
+          "excerpt_sha256",
+          "commit",
+          "kind"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "excerpt_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "commit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "kind": {
+            "enum": [
+              "source",
+              "test",
+              "config",
+              "documentation",
+              "human"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "maxItems": 500
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://github.com/bpstr/understand-code/schemas/gap.schema.json",
+        "title": "gap",
+        "type": "object",
+        "required": [
+          "id",
+          "question",
+          "next_step"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "next_step": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "uniqueItems": true,
+            "maxItems": 100
+          }
+        },
+        "additionalProperties": false
+      },
+      "maxItems": 500
+    },
+    "review": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "unreviewed",
+            "source-reviewed"
+          ]
+        },
+        "reviewer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 12000
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 12000
+        }
+      },
+      "additionalProperties": false
+    },
+    "followups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "paths",
+          "question"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100,
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "resolved_gaps": {
+      "type": "array",
+      "maxItems": 500,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "evidence",
+          "rationale"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "uniqueItems": true
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "retirements": {
+      "type": "array",
+      "maxItems": 500,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "evidence",
+          "rationale"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,159}$"
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "uniqueItems": true
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12000
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

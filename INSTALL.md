@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Python 3.10 or newer; Git for tracked inventories, history, diffs and worktree isolation. No Python runtime dependencies, API keys, service signup or background process are needed. Claude/Codex installation and authentication are managed by those hosts. Native investigations use repository-configured code-intelligence tools as optional retrieval aids. The engine has no vendor-specific importer or required index.
+Node.js 22 or newer; Git for tracked inventories, history, diffs and worktree isolation. The released JavaScript engine has no runtime npm dependencies and does not need Python, a TypeScript compiler, API keys, service signup or a background process. Claude/Codex installation and authentication are managed by those hosts. Native investigations use repository-configured code-intelligence tools as optional retrieval aids. The engine has no vendor-specific importer or required index.
 
 ## Codex
 
@@ -60,25 +60,29 @@ Choose the target host in the installer. The entire engine, schemas, specialist 
 Pinned release:
 
 ```bash
-uv tool install 'git+https://github.com/bpstr/understand-code.git@v1.0.0'
+npm install --global https://github.com/bpstr/understand-code/releases/download/v2.0.0/understand-code-2.0.0.tgz
 understand-code --version
 ```
 
-Without uv:
+Without a global CLI installation, extract the standalone skill ZIP and run its bundled entrypoint:
 
 ```bash
-python3 -m venv ~/.venvs/understand-code
-~/.venvs/understand-code/bin/python -m pip install 'git+https://github.com/bpstr/understand-code.git@v1.0.0'
-~/.venvs/understand-code/bin/understand-code --help
+node /path/to/understand-code/scripts/run.mjs --help
 ```
 
 Update to a reviewed release by replacing the version tag:
 
 ```bash
-uv tool install --force 'git+https://github.com/bpstr/understand-code.git@v1.0.0'
+npm install --global https://github.com/bpstr/understand-code/releases/download/v2.0.0/understand-code-2.0.0.tgz
 ```
 
-Or follow main explicitly with `uv tool install --force 'git+https://github.com/bpstr/understand-code.git@main'`. Pinning a tag is preferable for repeatable deployments. The same pinned install command supports rollback to an earlier release. No PyPI publication is required or implied.
+Download artifacts and `SHA256SUMS` from the matching [GitHub release](https://github.com/bpstr/understand-code/releases/tag/v2.0.0) when you need checksum verification before installation. The same pinned archive command supports rollback to another Node.js release. The repository does not require or imply publication to the npm registry. To use an unreleased checkout, follow the local-development steps below.
+
+### Upgrading from 1.x
+
+Version 2.0.0 replaces the Python package with compiled JavaScript. Install the Node.js package or refresh your plugin/skill; use `node .../run.mjs` in scripts that previously called `python3 .../run.py`. If an older `understand-code` command remains earlier on your PATH, remove that old installation using its original package manager or invoke the new package by its absolute path. `understand-code --version` must report `2.0.0`.
+
+Existing manifest, evidence and Change Knowledge v1 formats remain supported. Preserve the current output and maintainer notes, run `verify`, and use `update` to handle reported stale work; do not delete historical evidence to silence a check. Python files remain supported source inputs. The old Python AST extraction is replaced with conservative declaration candidates, explicitly labeled `INFERRED`, and a visible analysis limitation. The engine does not execute Python or any other target-language runtime.
 
 ## First reconstruction
 
@@ -114,10 +118,11 @@ The update creates scoped tasks and marks affected prior claims UNKNOWN. Investi
 ```bash
 git clone https://github.com/bpstr/understand-code.git
 cd understand-code
-python3 -m venv .venv
-.venv/bin/python -m pip install -e .
-python3 scripts/build_bundle.py
-python3 scripts/check_distribution.py
+npm ci --ignore-scripts
+npm run build
+npm test
+npm run check
+node bin/understand-code.mjs --help
 ```
 
-Edit canonical code under `src/`, contracts under `schemas/`, and role objectives in `src/understand_code/spec/planner.py`. Regenerate the bundle after edits; CI rejects stale copies. Run `sh scripts/understand-code.sh --help` to inspect the bundled runner without any provider call.
+Edit canonical TypeScript under `src/`, contracts under `schemas/`, and role objectives in `src/understand_code/spec/planner.ts`. The pinned TypeScript compiler and Node type definitions are development dependencies only. Regenerate the bundle after edits; CI rejects stale JavaScript, declarations, schemas or role cards. Run `sh scripts/understand-code.sh --help` to inspect the bundled runner without any provider call. Build and inspect release packages with `npm run release` followed by `npm run check:artifacts`; both commands are local and do not publish.

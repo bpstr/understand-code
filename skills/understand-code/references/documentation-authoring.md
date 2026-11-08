@@ -130,7 +130,7 @@ Reference, how-to and tutorial profiles require a useful example. Choose `runnab
 
 Default to `validation.status: not-run` and `level: none` with an honest reason. If an authorized external harness performs a check, record `passed` or `failed` and the actual level: `syntax`, `schema` or `behavior`. Syntax/schema checks do not establish the expected runtime behavior. Illustrative examples cannot claim executed validation. [Rustdoc's documentation tests](https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html) illustrate why compiling and running are distinct checks; this skill does not require Rust.
 
-A checked example needs `provenance` containing the command, environment, task snapshot, timezone-aware timestamp, runner, output SHA-256, example SHA-256 and exit code. Bind the example hash to the exact language, code, prerequisites and expected result using `example_fingerprint` in the engine's `documentation.py`; changing any of those invalidates the attestation. Never fabricate a run or hash from an expected result. An exit code of zero alone is insufficient: the harness must check the stated behavior before reporting level `behavior`.
+A checked example needs `provenance` containing the command, environment, task snapshot, timezone-aware timestamp, runner, output SHA-256, example SHA-256 and exit code. Bind the example hash to the exact language, code, prerequisites and expected result using `example_fingerprint` in the engine's `documentation.ts`; changing any of those invalidates the attestation. Never fabricate a run or hash from an expected result. An exit code of zero alone is insufficient: the harness must check the stated behavior before reporting level `behavior`.
 
 The engine never executes examples or target code. Use only checks already authorized for the external harness; otherwise retain `not-run` and report the blocker. A source snapshot change invalidates an existing check even if the example text remains unchanged. Preserve failed checks and their diagnosis.
 
@@ -141,7 +141,7 @@ Have a separate reviewer read the relevant source and the rendered document. Che
 Apply through the normal reviewed findings workflow, then run:
 
 ```bash
-python3 <skill-directory>/scripts/run.py verify --repo <repo> --require-doc-quality
+node <skill-directory>/scripts/run.mjs verify --repo <repo> --require-doc-quality
 ```
 
 Inspect `documentation_quality` in `verify` or `status`. The gate covers authored documents only. It blocks missing required topics/examples, required unknowns, unreviewed/stale/conflicting support, unresolved requirements and runnable examples lacking a current successful behavior check. Illustrative examples are disclosed as warnings. No authored documents means not ready. Existing integrity and investigation/change-completeness gates retain their separate meanings.

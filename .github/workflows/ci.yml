@@ -2,32 +2,80 @@ name: Offline validation
 on:
   push:
     branches: [main]
-    tags: ['v*']
   pull_request:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish this version after all offline checks pass (main only)
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
   offline:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python: ['3.10', '3.12', '3.13']
+        node: ['22', '24', '26']
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: ${{ matrix.python }}
-      - name: Validate source contracts without inference or credentials
-        run: PYTHONPATH=src python -m unittest discover -s tests -v
-      - name: Validate distribution and self-contained skill
-        run: python scripts/check_distribution.py
-      - name: Build plugin archives
-        run: python scripts/release.py
-      - name: Build and install Python wheel
-        run: |
-          python -m pip wheel --no-deps . --wheel-dir dist
-          python -m pip install --no-deps dist/*.whl
-          understand-code --version
-          understand-code --help
-      - name: Exercise packaged entrypoints with prepared fixtures
-        run: python scripts/check_artifacts.py
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Install pinned development tools without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Check strict TypeScript and generated distribution
+        run: npm run check
+      - name: Validate prepared source contracts without inference or credentials
+        run: npm test
+      - name: Build plugin, skill and npm archives
+        run: npm run release
+      - name: Exercise packaged entrypoints and offline installation without Python
+        run: npm run check:artifacts
+      - name: Preserve the tested release candidates
+        if: matrix.node == '24' && github.repository == 'bpstr/understand-code' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_release))
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate
+          path: |
+            dist/*-plugin.zip
+            dist/*-skill.zip
+            dist/understand-code-*.tgz
+            dist/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 1
+  publish:
+    needs: offline
+    if: github.repository == 'bpstr/understand-code' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_release))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: understand-code-release
+      cancel-in-progress: false
+    env:
+      BEFORE_SHA: ${{ github.event.before }}
+      PUBLISH_REQUESTED: ${{ inputs.publish_release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check the version-change publication boundary
+        id: candidate
+        run: node scripts/publish_release.mjs --candidate
+      - name: Retrieve artifacts from the successful matrix
+        if: steps.candidate.outputs.publish == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: release-candidate
+          path: dist
+      - name: Publish the exact validated commit without moving existing tags
+        if: steps.candidate.outputs.publish == 'true'
+        run: node scripts/publish_release.mjs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,10 @@
+import { digest } from './ontology.js';
+export declare const SECRET_NAMES: Set<string>;
+export declare const EXCLUDED: Set<string>;
+export declare function split_lines(text: string): string[];
+export declare function safe_path(root: string, relative: string): string;
+export declare function excluded(filename: string, output: string): boolean;
+export declare function read_source(root: string, filename: string, limit?: number): string;
+export declare const source_hash: typeof digest;
+export declare function capture(filename: string, text: string, start: number, end: number, commit: string, kind?: string): Record<string, any>;
+export declare function verify(root: string, record: Record<string, any>, output: string): string | null;

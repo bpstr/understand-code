@@ -5,7 +5,7 @@ The supplied design's v1 capability set is implemented as an engine plus native-
 | Requirement | Implementation / validation |
 | --- | --- |
 | Tool-agnostic retrieval | Native sessions use repository-configured tools; the engine has no vendor dependency or refresh requirement |
-| Repository/framework discovery | Git inventory, manifests, language extensions, exact Python symbol extraction and native cartographer interpretation; bounded/excluded inventory tests |
+| Repository/framework discovery | Git inventory, manifests, language extensions, conservative declaration candidates with explicit limitations and native cartographer interpretation; bounded/excluded inventory tests |
 | Module/architecture map | Evidence-backed directory membership baseline; cartographer/deployment findings add actual responsibilities |
 | Entrypoints/features/flows | Candidates plus entrypoint/domain/runtime specialists; prepared checkout findings demonstrate supported behavior and missing HTTP binding |
 | UI/backend, settings, data and tests | Dedicated specialist contracts and typed edges; prepared setting → cache invalidation → checkout gate evidence, explicit gap instead of a fictional UI/server connection |
@@ -18,9 +18,9 @@ The supplied design's v1 capability set is implemented as an engine plus native-
 | Documentation readiness | Separate `documentation_quality` report and optional `--require-doc-quality` gate; incomplete/unreviewed/stale content remains visible, and legacy verification retains its meaning |
 | Incremental Git refresh | Base diff plus working-tree snapshots, renamed/deleted/new files, semantic blast radius, stale quarantine and focused tasks |
 | Claude/Codex providers | Native task adapters, shared self-contained skill, Claude role cards and both plugin manifests; distribution/native manifest checks |
-| Setup/update/release | Pinned Git installation, host marketplace instructions, CI, versioned release and checksum archives |
+| Setup/update/release | Pinned npm archive installation, host marketplace instructions, Node.js CI, versioned plugin/skill/npm archives and checksums |
 
-Git history is available to the deep-mode history specialist, but no statistical co-change engine or runtime trace executor is claimed. CI verifies this tool's offline contracts; optional `verify --require-complete` is available for consuming repositories. Interactive visualization and automatic external index extraction remain outside v1. No hosted server deployment, PyPI upload, paid headless provider driver, live-model quality evaluation or store approval is implied by the GitHub release.
+Git history is available to the deep-mode history specialist, but no statistical co-change engine or runtime trace executor is claimed. CI verifies this tool's offline contracts; optional `verify --require-complete` is available for consuming repositories. Interactive visualization and automatic external index extraction remain outside v1. No hosted server deployment, npm registry publication, paid headless provider driver, live-model quality evaluation or store approval is implied by the GitHub release.
 
 Fixture assertions measure engine behavior: citation integrity, state transitions, preservation and uncertainty. They do not measure model feature-location recall, relationship accuracy or false-intent rates. Those require a separately authorized evaluation plan; paid synthetic testing is forbidden here.
 
