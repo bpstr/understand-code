@@ -55,6 +55,7 @@ def parser() -> argparse.ArgumentParser:
             cmd.add_argument("--base", help="Git revision; includes committed, staged, unstaged, deleted and renamed files")
         if command == "verify":
             cmd.add_argument("--require-complete", action="store_true", help="Also fail on pending/deferred investigation coverage")
+            cmd.add_argument("--require-doc-quality", action="store_true", help="Also require authored document profiles, review, traceability and example checks; not whole-repository coverage")
             cmd.add_argument("--require-change-complete", action="store_true", help="Separate strict occurrence/discovery gate; requires --change-scope")
         if command == "evidence":
             cmd.add_argument("path")
@@ -141,6 +142,7 @@ def main(argv=None) -> int:
             result = checks if args.command == "verify" else {"manifest": state["manifest"], "verification": checks,
                       "tasks": [{"id": t["id"], "role": t["role"], "status": t["status"]} for t in state["plan"]["tasks"]]}
             if args.command == "verify" and (not checks["ok"] or (args.require_complete and not checks["coverage_complete"])
+                                             or (args.require_doc_quality and not checks["documentation_quality"]["ready"])
                                              or (args.require_change_complete and not checks["change_coverage"]["change_complete"])):
                 print(json.dumps(result, indent=2))
                 return 1

@@ -2,7 +2,7 @@
 
 **Reconstruct what a codebase does, where its features live, and how changes travel through it—with source evidence.**
 
-Understand Code is a Python CLI and self-contained Claude Code / Codex skill. It produces a repository-native **Codebase Spec** in `docs/codebase/`: Markdown concept pages, source citations, typed relationships, change maps and explicit knowledge gaps.
+Understand Code is a Python CLI and self-contained Claude Code / Codex skill. It produces a repository-native **Codebase Spec** in `docs/codebase/`: Markdown concept pages, source citations, typed relationships, change maps and explicit knowledge gaps. Reviewed findings can also include reader-facing reference, how-to, tutorial, explanation and specification documents.
 
 It combines deterministic inventory and validation with bounded investigations in your existing Claude or Codex session. It never starts provider subprocesses, executes the target application, or silently spends API credits.
 
@@ -71,14 +71,29 @@ Bootstrap inventories the repository and writes an investigation plan. It **does
 | --- | --- |
 | Structural discovery | Git-aware file inventory, language/manifests, Python symbols, route/settings/UI/data/event/test candidates, explicit scan limits |
 | Native agents | 18 specialist roles; adaptive quick/standard/deep budgets; Claude/Codex task formats; sequential or authorized native delegation |
-| Semantic model | 18 entity kinds and 22 directed relation types; stable IDs, aliases, feature/flow pages and source-linked change maps |
+| Semantic model | Typed entities and directed relationships; stable IDs, aliases, feature/flow pages and source-linked change maps |
 | Evidence | Exact ranges, file and excerpt hashes, source snapshots, explicit confidence and recorded semantic review |
+| Authored documentation | Audience and purpose, behavioral contracts, ordered procedures, tables, literal examples, requirement traceability and maintenance triggers |
 | Incremental updates | Git base + working-tree hashes; renames/deletions; transitive semantic impact; stale claims demoted to UNKNOWN |
 | Human knowledge | Maintainer notes preserved; generated edits block replacement; conflicts retain alternatives |
 | Agent readiness | Instruction scopes, size, duplicate content, missing link observations and bounded recommendations |
 | Distribution | Codex/Claude manifests and marketplaces, standalone skill runner, installable Python package, offline CI and release archives |
 
 The default output includes overview, concept pages, evidence, instruction/readiness reports, operational pointers, glossary and gaps. Relevant feature/flow/settings/UI/data pages appear when findings support them. Empty architecture claims are not filled with plausible prose.
+
+## Write documentation and specifications
+
+Ask the skill to document an in-scope API, explain a design, write a how-to or prepare an implementation specification. It first inspects existing documentation and the source, then chooses the reader, purpose and document profile. Optional `entity.documentation` records become linked pages in `docs/codebase/documents/`; ordinary reconstruction findings remain valid without them.
+
+Specifications distinguish observed behavior, existing specified intent, proposals and unknowns. Stable requirement IDs connect statements, rationale and source/test evidence to a verification plan. Examples retain their literal code and clearly state whether they were unexecuted, syntax/schema checked or behavior checked by an external harness. A proposal is not an approved design, and reading a test is not running it.
+
+```bash
+understand-code verify --repo /path/to/worktree --require-doc-quality
+```
+
+The optional documentation gate reports missing profile topics, unresolved requirements, stale or unreviewed support and examples without the required check. Its `documentation_quality` report also appears in `status`. It assesses authored documents, separately from investigation/change completeness; no authored documents means not ready. Passing records structural readiness and source review, not semantic proof or coverage of every API in the repository.
+
+See the [authoring guide](skills/understand-code/references/documentation-authoring.md), [workflow](docs/WORKFLOW.md#reader-facing-documents-and-specifications) and [research and gap analysis](docs/research/2026-11-08-documentation-quality.md). Source comments and docstrings can be recommended, while the engine continues to write only its configured Codebase Spec output.
 
 ## Truth and limitations
 

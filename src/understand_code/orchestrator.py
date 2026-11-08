@@ -170,14 +170,14 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
             task_plan["followups"] = old["plan"].get("followups", [])
         # Maintainer notes carry higher editorial authority, but never become source proof.
         if old:
-            from .spec.writer import END
+            from .spec.writer import split_generated
             notes = []
             for path in old["manifest"]["managed"]:
                 text = safe_path(root, output + "/" + path).read_text()
-                if END in text:
-                    note = text.split(END, 1)[1].split("<!-- understand-code:human -->", 1)[-1].strip()
-                    if note:
-                        notes.append({"path": output + "/" + path, "note": note[:4000], "authority": "maintainer assertion; verify source separately"})
+                _, suffix = split_generated(text)
+                note = suffix.split("<!-- understand-code:human -->", 1)[-1].strip()
+                if note:
+                    notes.append({"path": output + "/" + path, "note": note[:4000], "authority": "maintainer assertion; verify source separately"})
             for task in task_plan["tasks"]:
                 task["maintainer_notes"] = notes[:30]
         bundles = []
@@ -276,6 +276,14 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
                                           "note": "External hints only; recapture source and review before native findings."}
                                          for item in state["knowledge_imports"][:20]]
         state["change_scopes"] = scopes
+        # Retired pages retain maintainer notes. Reserve their original document
+        # owner so a later entity cannot silently inherit another entity's page.
+        document_owners = dict(old["manifest"].get("document_owners", {})) if old else {}
+        for entity in entities:
+            for document in entity.get("documentation", []):
+                owner = document_owners.setdefault(document["id"], entity["id"])
+                if owner != entity["id"]:
+                    raise ValueError("Document ID belongs to another historical entity; use a new document ID")
         docs = render(state, output)
         manifest = {"producer": "understand-code", "schema_version": 1, "version": __version__,
                     "commit": inv["commit"], "snapshot": task_plan["snapshot"], "mode": mode, "provider": provider,
@@ -285,6 +293,7 @@ def run(root: Path, output: str, command: str, mode: str = "standard", provider:
                     "pending_tasks": sum(t["status"] != "accepted" for t in task_plan["tasks"]),
                     "deferred_scopes": len(task_plan["deferred"])},
                     "validation": "mechanical source checks only; semantic review is recorded separately",
+                    "document_owners": document_owners,
                     "output": output}
         metadata = {"_meta/" + key + ".json": json_text(value) for key, value in
                     (("inventory", inv), ("plan", task_plan), ("gaps", state["gaps"]), ("audit", state["audit"]),

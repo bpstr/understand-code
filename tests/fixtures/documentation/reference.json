@@ -1,0 +1,66 @@
+{
+  "id": "doc.checkout-reference",
+  "title": "Checkout function reference",
+  "profile": "reference",
+  "mode": "as-built",
+  "audience": "Developers calling the prepared checkout function",
+  "purpose": "Describe the guest gate and returned dictionaries without claiming HTTP reachability.",
+  "scope": "checkout(user, items) in the prepared legacy fixture; server binding is outside scope.",
+  "canonical_sources": ["$contract"],
+  "sections": [
+    {
+      "id": "section.inputs",
+      "topic": "inputs",
+      "title": "Inputs and assumptions",
+      "status": "documented",
+      "content": "The function receives user and items. It reads the guest_checkout setting when user is falsey.\n\nThe function does not validate item structure.",
+      "evidence": ["$source"],
+      "table": {
+        "columns": ["Input", "Meaning"],
+        "rows": [["user", "A truthy user bypasses the guest gate."], ["items", "Returned as order on the successful branch."]]
+      }
+    },
+    {
+      "id": "section.outputs",
+      "topic": "outputs",
+      "title": "Successful result",
+      "status": "documented",
+      "content": "The successful branch returns status 200, the supplied items as order, and requires_login false.",
+      "evidence": ["$source", "$test"]
+    },
+    {
+      "id": "section.errors",
+      "topic": "errors",
+      "title": "Guest denied",
+      "status": "documented",
+      "content": "An absent user with guest checkout disabled receives status 401 and requires_login true.",
+      "evidence": ["$source", "$test"]
+    },
+    {
+      "id": "section.side-effects",
+      "topic": "side-effects",
+      "title": "Side effects and boundaries",
+      "status": "documented",
+      "content": "The checkout body reads settings and constructs a result. It does not persist an order; settings implementation and external callers require separate inspection.",
+      "evidence": ["$source"]
+    }
+  ],
+  "examples": [
+    {
+      "id": "example.guest-denied",
+      "title": "Guest gate example",
+      "kind": "runnable",
+      "language": "python",
+      "code": "from checkout import checkout\nfrom settings import save_checkout_settings\n\nsave_checkout_settings(False)\nresult = checkout(None, [])\nassert result['status'] == 401\nif result['status'] == 401:\n    assert result['requires_login'] is True\n",
+      "prerequisites": "An authorized Python fixture environment with checkout.py and settings.py on the module path; modifying this fixture setting is permitted there.",
+      "expected": "A dictionary containing status 401 and requires_login true.",
+      "evidence": ["$source", "$test"],
+      "validation": {
+        "status": "not-run",
+        "level": "none",
+        "reason": "Prepared example text; the engine and regression harness have not executed it."
+      }
+    }
+  ],
+  "review_when": ["checkout return values or the guest gate change.", "the canonical fixture contract changes."]
+}

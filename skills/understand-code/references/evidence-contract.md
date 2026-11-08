@@ -6,6 +6,14 @@ Every evidence record binds a repository-relative path, inclusive line range, wh
 
 Every entity has `id`, `kind`, `title`, `summary`, `confidence`, `evidence`. Stable semantic IDs such as `feature.checkout` are preferred; preserve IDs after renames. `aliases` records old names for maintainers. `details` may contain concise feature-specific sections, all subject to the same citations and confidence as the summary. Do not put unsupported claims in details.
 
+Optional `documentation` holds reader-facing documents governed by [documentation.schema.json](schemas/documentation.schema.json). Read [documentation authoring](documentation-authoring.md) before using it. Legacy entities and `details` remain valid. Document IDs are globally unique and stable; section, requirement and example IDs are unique within their document. Each nested citation must appear in both the owning entity's evidence and the current response's evidence records. Documents inherit the entity's confidence, source review, staleness and conflict state.
+
+Once an entity has authored documents, include `documentation` explicitly on updates: preserve its records or use `[]` for intentional removal. Edits/removal follow normal conflict and reviewed `supersedes` handling; omission cannot silently drop content. Historical document IDs remain reserved to the original owner after retirement.
+
+Keep authority separate from confidence. Requirements marked `observed` need source/configuration evidence; `specified` needs documentary/human evidence; `proposed` needs an explicit origin and does not imply approval; `unknown` needs unresolved verification. Only observed/unknown requirements belong in `as-built`, only proposed/unknown in `proposal`, and `mixed` permits an explicit comparison. Verification test references must be evidence of kind `test`; a planned procedure or test source is not an execution result.
+
+For examples, `not-run` requires level `none` and no execution provenance. Checked examples require actual check level and provenance bound to the task snapshot and the language/code/setup/expected-result fingerprint. Do not reuse an attestation after changing those inputs. The engine checks the record, never executes it or proves the runner's assertion. Keep illustrative sketches explicitly unexecuted.
+
 Relations have `id`, `source`, `target`, `kind`, `confidence`, `evidence`. Endpoints must be known entities, introduced in the same response or an earlier accepted response. Direction is literal: `setting.guest-checkout affects feature.checkout`, not its reverse. A relation is a separate claim requiring its own citations.
 
 Confidence means:

@@ -1,0 +1,48 @@
+{
+  "id": "doc.checkout-specification",
+  "title": "Checkout behavior and proposed adapter contract",
+  "profile": "specification",
+  "mode": "mixed",
+  "audience": "Maintainers implementing or reviewing the checkout gate",
+  "purpose": "Keep observed behavior, existing documentary authority, and a future adapter proposal distinguishable.",
+  "scope": "The prepared checkout function and an explicitly proposed adapter error code; no deployed server is asserted.",
+  "canonical_sources": ["$contract"],
+  "requirement_convention": "Preserve the fixture's shall wording for specified requirements; observed statements describe implementation and proposals are not approved.",
+  "sections": [
+    {"id": "section.behavior", "topic": "behavior", "title": "Behavior", "status": "documented", "content": "The guest gate returns one of two dictionaries according to user presence and the guest_checkout setting.", "evidence": ["$source"]},
+    {"id": "section.interfaces", "topic": "interfaces", "title": "Interface boundary", "status": "documented", "content": "The examined callable is checkout(user, items). An HTTP adapter is outside the examined function and is not asserted here.", "evidence": ["$source"]},
+    {"id": "section.data", "topic": "data", "title": "Data contract", "status": "documented", "content": "On the successful branch the supplied items become the order value without item validation in this body.", "evidence": ["$source"]},
+    {"id": "section.failures", "topic": "failures", "title": "Denial behavior", "status": "documented", "content": "A falsey user with disabled guest checkout returns 401 and requires_login true. No exception translation is implemented in this body.", "evidence": ["$source"]},
+    {"id": "section.security", "topic": "security", "title": "Security boundary", "status": "documented", "content": "This body applies the guest gate but does not authenticate a user object or establish server authorization.", "evidence": ["$source"]},
+    {"id": "section.quality", "topic": "quality", "title": "Quality target scope", "status": "not-applicable", "content": "The supplied contract expressly leaves performance targets unagreed; this document makes no latency, availability, or throughput guarantee.", "evidence": ["$contract"]},
+    {"id": "section.verification", "topic": "verification", "title": "Verification intent", "status": "documented", "content": "The prepared test file contains assertions for denied and allowed guest checkout. These assertions have been inspected, not executed by Understand Code.", "evidence": ["$test"]}
+  ],
+  "requirements": [
+    {
+      "id": "req.observed-guest-gate",
+      "statement": "When user is falsey and guest_checkout is false, checkout returns status 401 with requires_login true.",
+      "basis": "observed",
+      "rationale": "Describe the implementation branch without upgrading it into stakeholder intent.",
+      "evidence": ["$source", "$test"],
+      "verification": {"method": "inspection", "procedure": "Inspect the conditional and the matching test assertion; no test execution is claimed.", "expected": "Both sources express the denied-guest result.", "test_evidence": ["$test"]}
+    },
+    {
+      "id": "req.specified-guest-gate",
+      "statement": "When guest checkout is disabled and no user is supplied, checkout shall return status 401 with requires_login true.",
+      "basis": "specified",
+      "rationale": "The prepared contract is documentary authority for this obligation.",
+      "evidence": ["$contract"],
+      "verification": {"method": "test", "procedure": "In an authorized fixture environment, disable guest checkout and call checkout with no user.", "expected": "The result contains status 401 and requires_login true; this is a verification plan, not a recorded run.", "test_evidence": ["$test"]}
+    },
+    {
+      "id": "req.proposed-adapter-error",
+      "statement": "A future checkout adapter should expose the stable error code authentication_required when the guest gate denies access.",
+      "basis": "proposed",
+      "origin": "Prepared change request in contract.md; pending maintainer decision and implementation.",
+      "rationale": "Make the future adapter contract assessable without claiming that an adapter currently exists.",
+      "evidence": ["$contract"],
+      "verification": {"method": "test", "procedure": "After an adapter is implemented and its contract accepted, exercise its guest-denial path.", "expected": "The future adapter exposes authentication_required; no existing test execution or approval is asserted.", "test_evidence": []}
+    }
+  ],
+  "review_when": ["the guest gate or return shape changes.", "the adapter request is accepted, rejected, or implemented."]
+}

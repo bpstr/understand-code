@@ -5,26 +5,27 @@ from pathlib import Path
 
 from ..ontology import digest, stable_id
 from ..change_scope import resolve
+from ..documentation import PROFILE_TOPICS
 
 ROLES = {
     "repository-cartographer": (None, "Map applications, packages and module boundaries using manifests and source."),
-    "entrypoint-mapper": ("entrypoint", "Locate executable entrypoints including hidden webhooks and workers."),
+    "entrypoint-mapper": ("entrypoint", "Locate executable entrypoints including hidden webhooks and workers; inspect public inputs/defaults, outputs, errors and effective security contracts against canonical schemas."),
     "domain-discoverer": (None, "Identify product capabilities across modules; distinguish names from proved behavior."),
     "ui-mapper": ("ui_surface", "Enumerate independent surfaces and primary-surface roles; trace composition, wrappers and observable consumers, not just named examples."),
-    "runtime-tracer": ("entrypoint", "Trace representative success, failure and conditional execution paths end to end."),
+    "runtime-tracer": ("entrypoint", "Trace representative success, failure and conditional execution paths end to end; document preconditions, state changes, side effects and supported recovery guarantees without inventing intent."),
     "data-mapper": ("data_entity", "Trace entity ownership, persistence, transformation and deletion."),
     "settings-tracer": ("setting", "Trace writer → validation → persistence → cache/projection → reader → observable consumers; record every missing link."),
     "integration-mapper": ("external_system", "Locate external boundaries, configuration and failure handling."),
     "async-mapper": ("event", "Trace producers, queues, consumers, retries and idempotency boundaries."),
     "permission-mapper": ("permission", "Connect authorization checks to entrypoints and conditional UI; distinguish server enforcement."),
     "reuse-mapper": ("ui_surface", "Find actual shared-component consumers AND independent implementations bypassing reuse; account for separate occurrences and variants."),
-    "test-analyst": ("test_behavior", "Read tests for asserted behaviors and untested branches; never execute tests or claim they pass."),
+    "test-analyst": ("test_behavior", "Map requirement IDs and examples to asserted behaviors and missing acceptance checks; distinguish verification plans, static checks and externally recorded execution. Never execute tests or claim they pass from source inspection."),
     "history-analyst": (None, "Inspect bounded Git history for hotspots/co-change; association is not runtime causation or intent."),
     "deployment-mapper": (None, "Map declared processes and deployment configuration; separate declared from observed operation."),
     "instruction-auditor": (None, "Resolve applicable instruction hierarchy, stale guidance, duplication and actual conflicts; recommend only."),
-    "feature-synthesizer": (None, "Reconcile stable concepts, search terms, surface roles, occurrence membership and effect paths with source evidence."),
+    "feature-synthesizer": (None, "Reconcile stable concepts, search terms, surface roles, occurrence membership and effect paths with source evidence; author reader-focused documentation profiles with explicit observed, specified, proposed and unknown requirements."),
     "relationship-verifier": (None, "Challenge primary-surface designation, concept membership, unsupported links and falsely complete inventories against current source."),
-    "spec-curator": (None, "Check occurrence dispositions, mandatory anchors, outstanding discovery obligations and implementation handoff coverage, not only navigation."),
+    "spec-curator": (None, "Review document audience, profile coverage, canonical sources, terminology, contracts, requirement traceability and honest example validation; retain occurrence dispositions, mandatory anchors, discovery obligations and implementation handoff checks."),
 }
 
 MODES = {"quick": (6, 24), "standard": (18, 40), "deep": (36, 60)}
@@ -33,7 +34,7 @@ MODES = {"quick": (6, 24), "standard": (18, 40), "deep": (36, 60)}
 def task_for(role: str, selected: list[str], snapshot: str, inventory: dict,
              max_paths: int, suffix: str = "") -> dict:
     task_id = stable_id("task", role + snapshot + "|".join(selected) + suffix)
-    return {"id": task_id, "role": role, "objective": ROLES[role][1], "snapshot": snapshot,
+    task = {"id": task_id, "role": role, "objective": ROLES[role][1], "snapshot": snapshot,
             "phase": ("synthesis" if role == "feature-synthesizer" else "verification" if role == "relationship-verifier"
                       else "curation" if role == "spec-curator" else "reconnaissance" if role in
                       ("repository-cartographer", "entrypoint-mapper", "domain-discoverer", "instruction-auditor") else "tracing"),
@@ -44,6 +45,17 @@ def task_for(role: str, selected: list[str], snapshot: str, inventory: dict,
                          "entities": [], "relations": [], "evidence": [], "gaps": [], "followups": [],
                          "review": {"status": "unreviewed"}},
             "completion": "Return source-bound findings or explicit gaps. Use repository-configured code-intelligence tools only as retrieval aids when applicable instructions describe them. Request follow-up scope when paths are insufficient. Prompt examples never define exhaustive scope. Never fill unknown links with plausible claims."}
+    if role in ("feature-synthesizer", "spec-curator", "entrypoint-mapper", "test-analyst"):
+        task["documentation_contract"] = {
+            "field": "entities[].documentation[]; optional authored views, never raw Markdown",
+            "profiles": PROFILE_TOPICS,
+            "guidance": "Read the skill documentation-authoring reference and documentation schema. "
+                        "Choose the user's audience/purpose; cite individual sections and requirements through entity.evidence. "
+                        "Separate observed/specified/proposed/unknown basis from confidence. "
+                        "Never execute examples; record external checks honestly or mark not-run. "
+                        "Preserve existing authored documents on entity updates; report missing coverage explicitly.",
+        }
+    return task
 
 
 def balanced_paths(paths: list[str]) -> list[str]:

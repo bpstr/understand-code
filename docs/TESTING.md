@@ -16,4 +16,18 @@ The fixture intentionally includes a stale README, dead implementation, setting 
 
 Prepared responses are contract evidence only. They do not establish provider availability, model quality, true production usage, settlement, live latency or launch qualification. Failed evidence must be preserved; do not regenerate expected values to conceal a regression.
 
+## Documentation contract scenarios
+
+The prepared inputs in [fixtures/documentation](../tests/fixtures/documentation/README.md) and `tests/test_documentation.py` exercise authored documents without invoking a model or executing the examples. Placeholder evidence IDs are rebound to exact ranges in the temporary fixture; any execution provenance is explicitly constructed test data.
+
+Maintain regressions for the following meaningful boundaries:
+
+- Accept supported reference, how-to and specification records while rejecting mismatched authority, missing nested citations and duplicate document identities.
+- Preserve paragraphs, ordered steps, tables, indentation, fences and marker-like literals; keep human notes and generated-edit protections intact.
+- Bind checked examples to both the supplied content and source snapshot; distinguish unexecuted, failed, syntax/schema and behavior checks.
+- Keep incomplete, unknown, stale or conflicting documents out of the optional readiness gate; preserve legacy findings and verification behavior.
+- Reconcile additive documentation and real conflicts, and omit native-only document records from the closed Change Knowledge Exchange v1 export.
+
+These cases establish deterministic ingestion, rendering and readiness behavior. They do not measure whether a native agent will select the right audience, discover every public interface, write useful explanations or infer correct requirements on unseen code. Use the manual source-and-reader review rubric in the [authoring guide](../skills/understand-code/references/documentation-authoring.md); do not present fixture success as a model evaluation.
+
 Live-content dogfood is a separate manual activity requiring exact real-content scope, an explicit hard monetary/request cap and a stop condition before any call. This repository's implementation/release authorization does not authorize it. No live dogfood was used for this release.

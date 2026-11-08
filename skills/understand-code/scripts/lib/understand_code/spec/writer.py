@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import tempfile
 from urllib.parse import quote
@@ -35,10 +36,42 @@ def page(title: str, body: str, entity: dict | None = None) -> str:
     return front + START + f"\n# {escape(title)}\n\n" + body.rstrip() + "\n" + END + HUMAN
 
 
-def generated(text: str) -> str:
-    if text.count(START) != 1 or text.count(END) != 1 or text.index(START) > text.index(END):
+def split_generated(text: str) -> tuple[str, str]:
+    """Split at real ownership markers, ignoring literal markers in fenced examples.
+
+    The writer emits standalone CommonMark fences. Recognize backtick and tilde
+    fences with up to three leading spaces so maintainer examples are safe too.
+    Markers outside a fence remain unique and ordered; this is not an HTML or
+    Markdown execution path.
+    """
+    starts, ends = [], []
+    fence = None
+    offset = 0
+    for line in text.splitlines(keepends=True):
+        candidate = re.match(r"^ {0,3}(`{3,}|~{3,})([^\r\n]*)[\r\n]*$", line)
+        if fence:
+            if (candidate and candidate[1][0] == fence[0]
+                    and len(candidate[1]) >= fence[1] and not candidate[2].strip()):
+                fence = None
+        elif candidate and (candidate[1][0] != "`" or "`" not in candidate[2]):
+            fence = (candidate[1][0], len(candidate[1]))
+        else:
+            starts.extend(offset + match.start() for match in re.finditer(re.escape(START), line))
+            ends.extend(offset + match.start() for match in re.finditer(re.escape(END), line))
+        offset += len(line)
+    if len(starts) != 1 or len(ends) != 1 or starts[0] > ends[0]:
         raise ValueError("Managed document markers are missing, duplicated, or reordered")
-    return text[:text.index(END) + len(END)]
+    boundary = ends[0] + len(END)
+    return text[:boundary], text[boundary:]
+
+
+def generated(text: str) -> str:
+    return split_generated(text)[0]
+
+
+def append_generated(text: str, content: str) -> str:
+    prefix, suffix = split_generated(text)
+    return prefix[:-len(END)] + content + END + suffix
 
 
 def source_link(page_path: str, output: str, ref: dict) -> str:
@@ -55,6 +88,8 @@ def entity_path(entity: dict) -> str:
 
 
 def render(state: dict, output: str) -> dict[str, str]:
+    from .documentation import document_path, render_documents
+
     inv = state["inventory"]
     refs = {r["id"]: r for r in state["evidence"]}
     entities = {e["id"]: e for e in state["entities"]}
@@ -112,6 +147,12 @@ def render(state: dict, output: str) -> dict[str, str]:
             for scope in matching_scopes:
                 relative = os.path.relpath("changes/" + scope["id"] + ".md", str(Path(path).parent))
                 body += f"- [{escape(scope['request']['topic'])}]({relative}) — preserve and account for every baseline/target obligation.\n"
+        if entity.get("documentation"):
+            body += "\n## Documentation and specifications\n\n"
+            for document in entity["documentation"]:
+                relative = os.path.relpath(document_path(document), str(Path(path).parent))
+                body += (f"- [{escape(document['title'])}]({quote(relative, safe='/')}) — "
+                         f"{document['profile']}, {document['mode']}\n")
         docs[path] = page(entity["title"], body, entity)
     index = (f"Reconstructed source commit: `{inv['commit']}`. Snapshot: `{state['plan']['snapshot']}`.\n\n"
              "This is an evidence index and semantic model, not a guarantee of correctness. Verify source before implementation.\n\n"
@@ -122,6 +163,11 @@ def render(state: dict, output: str) -> dict[str, str]:
     if state.get("change_scopes"):
         index += "\n\n## Change coverage\n\n" + "\n".join(
             f"- [{escape(scope['request']['topic'])}](changes/{scope['id']}.md)" for scope in state["change_scopes"].values())
+    documents = [document for entity in entities.values() for document in entity.get("documentation", [])]
+    if documents:
+        index += "\n\n## Documentation and specifications\n\n" + "\n".join(
+            f"- [{escape(document['title'])}]({document_path(document)}) — {document['profile']}, {document['mode']}"
+            for document in documents)
     docs["README.md"] = page("Codebase Spec", index)
     docs["overview.md"] = page("Repository overview", f"Scanned {len(inv['files'])} text files ({inv['bytes_read']} bytes).\n\n"
                               + "Languages by file extension: " + escape(json.dumps(inv["languages"]))
@@ -156,7 +202,7 @@ def render(state: dict, output: str) -> dict[str, str]:
             # Bidirectional navigation without changing the source file itself.
             entity_doc = docs[paths[entity["id"]]]
             backlink = os.path.relpath(code_path, str(Path(paths[entity["id"]]).parent))
-            docs[paths[entity["id"]]] = entity_doc.replace(END, f"\nSource index: [{escape(source)}]({backlink})\n" + END)
+            docs[paths[entity["id"]]] = append_generated(entity_doc, f"\nSource index: [{escape(source)}]({backlink})\n")
         for relation in relations:
             body += f"- Relation `{relation['kind']}`: `{relation['source']}` → `{relation['target']}`; {relation['confidence']}\n"
         docs[code_path] = page(source, body)
@@ -190,6 +236,7 @@ def render(state: dict, output: str) -> dict[str, str]:
         body += f"\nFull provenance, review history, exclusions and current obligations: `../_meta/change-scopes/{scope['id']}/scope.json`.\n"
         body += "\nUnderstand Code executed no target-application tests. External execution evidence and static-only acceptance policy are explicit in the coverage report.\n"
         docs["changes/" + scope["id"] + ".md"] = page(scope["request"]["topic"], body)
+    docs.update(render_documents(state, output))
     return docs
 
 
@@ -216,10 +263,10 @@ def write(output: Path, docs: dict[str, str], metadata: dict[str, str], manifest
                 if path not in old.get("managed", {}):
                     raise ValueError(f"Unmanaged document would be overwritten: {path}")
                 prior = file.read_text()
-                docs[path] = generated(text) + prior[prior.index(END) + len(END):]
+                docs[path] = generated(text) + split_generated(prior)[1]
         for path in set(old.get("managed", {})) - docs.keys():
             prior = (output / path).read_text()
-            docs[path] = generated(page("Retired concept", "This concept is no longer in the current model. Consult Git history and maintainer notes; do not use it as current evidence.")) + prior[prior.index(END) + len(END):]
+            docs[path] = generated(page("Retired concept", "This concept is no longer in the current model. Consult Git history and maintainer notes; do not use it as current evidence.")) + split_generated(prior)[1]
     manifest["managed"] = {path: digest(generated(text)) for path, text in docs.items()}
     manifest["metadata_hashes"] = {**old.get("metadata_hashes", {}), **{path: digest(text) for path, text in metadata.items()}}
     metadata["_meta/manifest.json"] = json_text(manifest)
